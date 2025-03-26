@@ -1,0 +1,248 @@
+****** SPRING FRAMEWORK ******
+ 
+
+1) spring is a dependency injection framework to make java application loosely 
+coupled.
+
+2) Dependency Injection is a design pattern
+
+3) Spring core = core + beans + context + spEL
+
+4) Spring IOC Container = ApplicationContext
+
+                   ApplicationContext(Interface)
+
+   its implementable class are
+
+   - ClasspathXMLApplicationContext
+   - AnnotationConfigApplicationContext
+   - FileSystemXMLApplicationContext
+
+
+5)Dependency injection can be done in 2 ways:
+
+a) Setter Injection through setter function
+
+b) Constructor Injection through constructor
+
+
+***** Setter injection ******
+
+<bean class="class name with full package eg com.springcore.Student" name="student1">
+ <property name="studentId"><value>12</value></property>
+                        or
+ <property name="student1" value="123"/>
+</bean>
+
+
+in main class
+ApplicationContext ac=new ClassPathXMLApplicationContext("config.xml")
+
+Student obj=ac.getBean("student1",student1.class);
+
+
+******** learn about setter injection on collection types *************
+
+eg on list
+
+<bean>
+  <property>
+   <list>
+	<value>123</value>
+        <value>234</value>
+   </list>
+  </property>
+</bean>
+
+****** setter injection on Object reference *********
+
+<bean>
+<property name="obj" ref="ob" />
+<bean>
+
+
+
+**** constructor injection *****
+
+<bean>
+ <constructor-arg value="hello"/> ---> value for 1st parameter
+ <constructor-arg ref="obj" /> ------> for injecting object
+</bean>
+
+
+
+***** Lifecycle method of spring bean ******
+
+public void init()
+
+
+public void destroy()
+
+
+spring container takes spring bean and configuration file
+
+1) spring creates object of bean
+2) spring initializes all its IV
+3) spring calls init method
+4) now we use the bean
+5) destroy
+
+
+*** configuring life cycle through XML ***
+
+1) inside class create method
+
+public void init(){
+}
+
+and in xml
+
+<bean init-method="init" destroy-method="bye">
+
+</bean>
+
+
+
+*** implementing life cycle through interfaces ***
+
+
+implements InitializingBean --> you get a method known as afterPropertiesSet()
+
+
+***** using annotation *****
+
+@PostConstruct above method but comes with a dependency of javax.annotation-api
+
+and in xml write <context:annotation-config/>
+
+
+
+***** Autowiring *****
+
+using xml byName,byType
+
+using annotations @Autowired
+
+
+
+**** autowiring by xml ****
+
+- byName checks same property name se koi bean hai
+e.g Address address and <bean name="address" class="">
+
+
+- byType checks for type
+
+
+- using @Autowired over the property name and in xml write <context:annotation-config/>
+
+
+*** @Qualifier Annotation ***
+
+- suppose for same property there are 2 objects what will you do then
+  @Qualifier("bean name") to be mentioned above that variable
+
+
+
+
+*** Stereotype Annotations ***
+
+@Component ---> over a class, tells spring container to create object of this classss
+
+and in xml you need to tell package inside which classes lie
+<context:component-scan base-package="" />
+
+and follows camel case to get the bean
+
+
+@Value to suply iv wit values
+
+@Value("Sujal Dhiman")
+private String name;
+
+
+*** Spring Bean Scope | Singletom | Prototype ***
+
+by default beans are singleton
+
+2 methods
+
+- in xml <bean scope="" />
+- using annotation @Scope("")
+
+
+*** Removing complete xml config ***
+
+1) @Component
+2) @Configuration --> above any java class tells spring that this class is handling
+   all configurations
+
+
+@Configuration
+@ComponentScan(basePackages="")
+public class JavaConfig{
+	
+  // another method of creating bean
+  @Bean
+  public Student getStudent(){
+	return new Student(); // now from ApplicationContext get bean by name getStudent
+  }
+}
+
+
+and ApplicationContext ac=new AnnotationConfigApplicationContext(JavaConfig.class)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

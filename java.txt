@@ -1,0 +1,288 @@
+Q1)How memory management in java takes place means when
+we create variables and arrays where are they created and
+how memory referencing takes place.
+
+
+Q2)When a object is created how is it stored in memory, what is this memory and what is its significance?
+
+Q3)Why only one public class in a file and many non public classes?
+
+Q4)How java compilation works, java architecture JVM and compiler working?
+
+Q5)Use of javac and java?
+
+Q6)What happens when new keyword is encountered by java compiler?
+
+
+
+JAVA NOTES:
+
+
+1) INITIALIZATION BLOCK: Objects instance variables can be initialized via constructor
+or initialization blocks. (first all initialization blocks will be executed then all the respective constructors).
+
+2) class design hints:
+
+a) always keep data private
+b) always initialize data
+
+
+start with chapter 5
+
+**** SUPER AND THIS ****
+
+1) The saga of super and this keyboard
+
+1) both have different meanings, super can not be refered to as another this.
+2) super is used to just tell compiler to invoke the method of super/parent class, if you will do sopln(super) you will get error, since super is not a reference to 
+   super class object
+3) super is used for 2 purpose, to invoke parent class methods and to invoke parent class constructor.
+4) this and super works similarly when invoking constructors.
+
+
+**** INHERITANCE ****
+
+1) whenever sub class object is created, in memory only one object is created containing properties of both classes.
+
+
+**** POLYMORPHISM ****
+
+1) A variable can refer to multiple object types e.g Employee e can refer to object to both Employee and Manager.
+2) Automatically selecting appropriate object at runtime is called as dynamic biding.
+3) You can assign subclass object to superclass variable.
+4) A superclass variable can store reference of object of its own and to all the objects which are inheriting it.
+5) You can not store reference of superclass object in subclass variable.
+6) Without any cast you can store subclass object in superclass variable
+   
+   Manager m1=new Manager();
+   Employee e1=m1; // valid
+
+7) String class is final and cannot be extended.
+8) Type of a variable denotes the kind of object it can refer and what it can do.
+9) When you are converting refernce from subclass to superclass variable you are demanding less, but on the contrary if you do vice versa you are demanding more and 
+   compiler won't allow you do it.
+10) Whenever you are doing upcasting or downcasting check whether the given object instanceof its parent class, then only you can do it.
+
+
+**** ABSTRACT CLASSES ****
+
+1) 
+
+
+
+**** OBJECT COSMIC SUPERCLASS **** (223)
+
+1) You can object variable to refer to objects of any type.
+
+**** Equals Method ****
+
+**** Arrays.equals(int[] a,int[] b) ****
+
+*** Objects.equals(Object a,Object b): here equals is a static method on Objects it return true if a and b are null, false if any of them is null else a.equals(b)
+
+*** Hashcode Method ***
+
+1) Hashcode is a integer that is derived from an object. It is derived from object's memory address. 
+
+2) hashcode method for Strings has been overridden and it is based out of characters present in a string.
+
+3) Objects.hashcode(arg) method returns 0 if arg is null else returns hashcode of the arg.
+
+4) ** contract between hashcode and equals ** -> if 2 objects are equal then their hashcode should be equal, but if 2 are different then they are different.
+
+*** ENUMERATION CLASSES ***
+
+
+*** CHAPTER 6 ***
+
+1) COMPARABLE INTERFACE(implemented at class level)
+     
+     interface Comparable<T>
+   - Has a method to be implemented known as int compareTo(T other)
+   - If you want to sort object of custom class using Arrays.sort then the class should implement Comparable Interface
+   - decreasing order integer array sort
+     
+     Arrays.sort(arr,Collections.reverseOrder());
+
+*** int compareTo(T other) ***
+
+- if function returns -1 it means no swap, current object should come first.
+- if function returns  0 it means object are equals.
+- if function returns +1 it means current object should come later.
+
+
+**** DRILL DOWN ****
+
+1) you can do custom sorting using 2 ways:
+
+a) Comparable View: The custom class should implement Comparable interface and then it has to override int compareTo method.
+   
+   - inside Arrays.sort then you have to just pass the array name, it will automatically take implementation from override
+     method
+
+b) Comparator View: Arrays.sort(arr,new <>()) the instance has to be passed of which has implemented Comparator interface
+   and overridden compare Method.
+
+   The class on which sorting has to be done, should never implement comparator as it is a bad practise, there should be 
+   always another class which takes the responsibility of sorting the original class.
+
+   e.g   class Employee{
+         String name;
+         int marks;
+         }
+         
+         class EmployeeSorter implements Comparator<Employee>{
+         
+         @Override
+         public int compare(Employee e1,Employee e2){
+         }
+         }
+
+         Arrays.sort(emp,new EmployeeSorter());
+
+
+*** INTEGER AND DOUBLE METHOD ***
+
+1) Integer.compare(int x,int y)- its a static method, return -1 if x<y, 0 if x == y and +1 x>y
+2) same goes for Double.compare
+
+
+
+*** GOOD QUESTION *** (why interfaces can't be converterd to abstract classes and then used?)
+
+
+*** TRICKY QUESTION *** (What will happen if your child class extends a class that has same method signature in parent
+and same method signature is listed in the interface as a default method, which implementation will child class will take?)
+
+1) if child class has no implementation of its own then it will take parent class implementation. parent >>>> interface
+  
+
+Q2) What will happen if a class implements 2 interface having same default method signatures, how will you resolve the 
+    confusion.
+
+A) It has to be done manually
+   - either you provide your implementation
+                 or
+   - resolve manually like this
+
+interface A{
+    default void display(){
+        System.out.println("Inside A");
+    }
+}
+
+interface B{
+    default void display(){
+        System.out.println("Inside B");
+    }
+}
+
+class Child implements A,B{
+    @Override
+    public void display(){
+        B.super.display();
+    }
+}
+                   
+
+*** OBJECT CLONING ***
+1) protected methods can be accessed in same class and in same package by using that importing class name and calling its
+   method, but in different package the class containing protected method has be extended in order to use its protected
+   method.
+
+2) *** QUESTION *** Q) Can while overriding a method you can change return type of the method - yes it is possible but
+   visibility should be taken to an higher level meaning method should be more visible.
+
+3) Learnt how protected access specifier works. (Protected methods can be accessed within same class, same package different
+class within and outside. When used inside subclass method is accessible within the class only but you can improve 
+visibility by overriding it and you can call parent class protected method by super.)
+
+4) SHALLOW COPY
+    
+   - Shallow copy should be used when object contains primitive and immutable references.
+   - To create shallow copy the class has to implement marker interface Cloneable to avoid getting checked exception
+     CloneNotSupportedException.
+   - to create clone inside the overridden method just call super.clone and return
+
+5) DEEP COPY
+   - implemented
+
+
+
+***** LAMBDA EXPRESSIONS *****(always used in cases of functional interfaces)
+
+shorthand notations
+
+
+***** FUNCTIONAL INTERFACES *****
+
+
+***** METHOD REFERENCES (to be started) *****
+
+1) :: separated method name from class or object
+2) CONSTRUCTOR REFERENCES
+
+
+
+***** EXCEPTIONS, ASSERTIONS and LOGGING *****
+
+Exception hierarchy: 
+                         
+              -----------THROWABLE-----------
+              V                             V
+            ERROR                        EXCEPTION
+                                             |
+                                             |
+                                             |
+                                 -------------------------
+                                 |                       |
+                                 |                       |
+                               IOException             Runtime Exception
+
+ 
+
+ERROR - describes internal errors and resource exhaustion situations for java runtime system. You can't do much in this 
+scenario hence never throw an object of this type.
+
+
+-Unchecked Exceptions: Any error that is being derived from Error class and RuntimeException class.
+
+-Checked Exceptions: All except Unchecked comes under the category of checked exception. Java says that for all checked
+exception you should provide exception handlers
+
+- The place where you can advertise the method can throw an exception is the header of the method
+- if the current method throws an exception and no handler catches it then the current executing thread terminates.
+- you should not advertise unchecked exception inheriting from RuntimeExceptions.
+- creating own exception class by extending Exception Class and applying concepts of inheritance.
+- if you are throwing a checked exception without wrapping it in try catch then in method you have to use throws
+  but if you are throwing an unchecked exception that java wont force you to handle it(IMP POINT)
+
+- java made unchecked exceptions to be unhandled because java wants you to fix it rather than handling it.
+- whereas checked exception you can't do anything hence handle them
+
+
+- if a method throws a checked exception then either you handle it or pass it on.
+
+
+*** RETHROWING AND CHAINING EXCEPTIONS ***
+
+- typically you do this when you have to change type of exception.
+
+*** Try with resource statement ***
+
+- you can put resource opening code in try statement and it will be automatically closed and you don't need any final clause.
+
+*** Tips for using exceptions ***
+
+- start from using assertions
+
+ 
+
+
+
+
+
+
+ 
+      
+

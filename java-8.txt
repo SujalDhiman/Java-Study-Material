@@ -1,0 +1,151 @@
+**** Streams Processing *****
+
+- sequence of data items moving one by one.
+- continuous flow of data that a program processes.
+
+
+
+--- behaviour parameterization --- deep dive on this term
+
+*** lambda expressions *** -- alternate to anonymous function
+
+- it is a short way of writing a function wihtout giving it a name.
+- it can be defined as a concise representation of an anonymous function that can be passed around.
+
+
+concise meaning - you dont need to write boiler plate code just like anonymous classes.
+passed around - it can be passed as argument to a method and can be stored in a variable.
+function - lambda has a list of parameters, has body and a return type.
+anonymous- it does not have a name unlike other methods have.
+
+*** Lambda expressions is divided into 3 parts ***
+
+                     arrow
+- (Apple a1,Apple a2) -> a1.getWeight().compareTo(a2.getWeigh());	
+    lambda parameter                    lambda body
+
+
+-- syntax of lambda
+
+- (parameters)->expression
+- (parameters)->{statements;}
+
+
+*** where to use lambdas ***
+
+- it can be used in the context of functional interface.
+
+*** Functional Interface *** --> it has only one abstract method
+
+- An interface is still a functional interface if it has many default methods as long as it specifies only one abstract
+ method
+
+- lambdas helps in providing implementation of the abstract method of the functional interfaces directly inline.
+
+- some famous functional interfaces
+                   
+a) Predicate<T>       T->boolean  here T is the parameter
+b) Consumer<T>        T->void
+c) Function<T,R>      T->R
+d) Supplier<T>        ()->T
+e) UnaryOperator<T>   T->T 
+f) BinaryOperator<T>  (T,T)->T
+g) BiPredicate<L,R>   (L,R)->boolean
+h) BiConsumer<T,U>    (T,U)->void
+i) BiFunction<T,U,R>  (T,U)->R
+
+
+- you can pass lambdas directly to a function
+- For now, it suffices to understand that a lambda expression can be assigned to a variable or passed to a method
+  expecting a functional interface as argument.
+
+*** Annotation for fucntional interface is *** (@FunctionalInteface)
+
+- Some functional interfaces:
+
+a) Predicate
+
+interface Predicate<T>{
+    boolean test(T t);
+} 
+
+b) Consumer
+
+interface Consumer<T>{
+    void accept(T t);
+}  
+
+c) Function
+
+interface Function<T,R>{
+    R apply(T t);
+}
+
+d) boxing is a method to convert primitives to their reference type(wrapper classes)
+
+e) we have seen functional interfaces corresponding to reference types, but functional interfaces corresponding to primitives
+are also present example IntPredicate, DoublePredicate, 
+
+  interface IntPredicate{
+     boolean test(int t);
+   }
+
+
+f) Boxed values like Integer occupies more memory as they create objects which are stored in heap.
+
+
+*** Usage of local variables with lambdas ***
+
+- if you want to use variables other than parameter of function inside lambda, then those variables should be defined as
+final.
+
+- or you make sure the variable you are using does not changes anywhere througout the code.
+
+- Question is why there is restriction on local variables?
+
+
+*** Method Reference ***
+
+- name of the method is placed after ::
+
+- there are 4 types of method references
+
+a) Classname :: static method
+b) object :: instanceMethod
+c) Classname :: instanceMethod
+d) Classname :: new --> reference to a constructor
+
+it simply means you can replace functional interface with any class method that matches its return type, parameters. e.g
+
+class ABC{
+    public static void hello(String str){
+        System.out.println("123");
+    }
+}
+public class Test {
+    public static void main(String args[]){
+
+        Consumer<String> cmp=(str)->{
+            System.out.println("hello "+str);
+        };
+
+        List<String> arr=new ArrayList<>();
+        arr.add("C++");
+        arr.add("JAVA");
+        arr.add("JAVASCRIPT");
+
+        arr.stream().forEach(ABC::hello);
+
+    }
+}
+
+
+
+
+
+
+ 
+
+
+
+	

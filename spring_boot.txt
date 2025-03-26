@@ -1,0 +1,77 @@
+*** Spring Boot ***
+
+- in application.properties debug=true, spring boot will tell you what classes it has activated and what not.
+- you get conditions evaluation report.
+- Positive matches: these classes will be autoconfigured by the spring based on CONDITION.
+- conditions can be: @ConditionalOnClass, @ConditionalOnProperty, @ConditionalOnMissingBean.
+- Negative matches: these classes will not be autoconfigured by the spring boot.
+- spring boot keeps a clone copy of meta data inside external libraries, spring-boot-autoconfigure/META-INF/spring/.
+- spring boot configures classes based on conditions.
+- SpringApplication.run returns ConfigurableApplicationContext which is an extension of Application Context, you can use
+  any but ApplicationContext is readonly hence you can modify beans.
+
+
+*** How spring boot works internally ***
+
+- @SpringBootApplication - main/primary annotation, and is a combination of
+
+- @Configuration---> for java based config approach for creating beans.
+- @AutoConfiguration ---> scans pom.xml and create beans based on conditions.
+- @ComponentScan ---> what all packages are needed to be scanned.
+
+- you can override @ComponentScan annotation, just below @SpringBootApplication, you can use @ComponentScan annotation
+  to override it and tell spring boot which all packages it needs to scan.
+  
+  @ComponentScan(basePackages="com.javatechie.a.*");
+
+
+*** How spring boot works ***
+
+1) creates application context (SpringApplication.run method)
+2) checks application type (inside create application context method) (web or reactive based on this it creates AC)
+3) scans and add beans to application context
+4) enable embedded tomcat containers.
+
+
+*** Spring Boot Conditions Annotations ***
+1) 
+
+
+*** Dependency Injection and Command Line Runner ***
+
+- Stereotype annotations: @Component --> parent annotation of all listed, @Service, @Repository, @Controller
+- They define roles/purpose on classes they are used.
+- @Component tells spring to take care of it and add to AC
+- java based approach first annotate that class with @Configure and inside it use @Bean and create method that will return
+  object
+- use of @Autowired
+
+- over setters 
+
+  @Autowired
+  @Qualifier("version1")
+  private WhatsappService whatsppService;
+
+- over constructor
+  @Autowired
+  UserService(@Qualifier("version1") WhatsappService whatappService){
+      this.whatsappService=whatsappService;
+  } 
+
+
+*** Preprocessing logic that you want to perform before application kicking off use CommandLineRunner ***
+
+- implement CommandLineRunner and override run method
+- this method runs before application starts
+
+
+
+
+
+
+*** Spring boot restful webservices ***
+
+
+
+
+
