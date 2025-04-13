@@ -201,7 +201,7 @@ visibility by overriding it and you can call parent class protected method by su
     
    - Shallow copy should be used when object contains primitive and immutable references.
    - To create shallow copy the class has to implement marker interface Cloneable to avoid getting checked exception
-     CloneNotSupportedException.
+     CloneNotSupportedException. If you don't implement Cloneable you will get error
    - to create clone inside the overridden method just call super.clone and return
 
 5) DEEP COPY
@@ -274,9 +274,34 @@ exception you should provide exception handlers
 
 *** Tips for using exceptions ***
 
-- start from using assertions
+- start from using assertions (To be continued)
+
+
+
+
+
+*** Generic Programming ***
+
+- class Pair<T>{
+   
+   private T first;
+   private T second;
+
+   public Pair(){
+   }
+
+   public Pair(T first,T second){
+         this.first=first;
+         this.second=second;
+   }
 
  
+
+** Type erasure
+** write what all has been understood
+** why can't we initialize array of type class, java does not allow creation of generic type arrays
+** you cannot instantiate type variable
+** start from 410-417
 
 
 

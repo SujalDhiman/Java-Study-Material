@@ -34,6 +34,7 @@
 
 
 *** Spring Boot Conditions Annotations ***
+
 1) 
 
 
@@ -62,14 +63,246 @@
 *** Preprocessing logic that you want to perform before application kicking off use CommandLineRunner ***
 
 - implement CommandLineRunner and override run method
-- this method runs before application starts
+- this method runs after psvm is executed and application context is initialized, after it immediately executes.
+
+
+*** Spring boot restful webservices *** (coding wise working of REQUEST PARAMS is remaining)
+
+- There are 2 types of webservices
+
+a) SOAP --> sticks to SOAP protocol, works on XML.
+b) REST --> sticks to HTTP or HTTPs protocol, XML, JSON, any media type, secure and token based authentication.
+
+
+-- 3 tier architecture:
+
+- Web (endpoints) (Controller) 
+- Service (business logic) (Service)
+- Database (dao logic) (Repository)
+
+
+
+-- course-service
+
+1) add course
+2) update course
+3) delete course
+4) view/get course
+
+
+dependencies: lombok, spring web
+project structure: controller, service, dto, dao, entity(model) and util(converting dto to entity and vice versa)
+
+dto-> it is the value that will be tansferred from controller to service, the dto will then be converted into model object
+to be saved inside db.
+
+
+- Course
+- courseId
+- name
+- trainerName
+- duration
+- startDate
+- courseType
+- fees
+- isCertificateAvailable
+
+- CourseService
+- CourseController - @RestController
+
+-- HTTP METHODS --
+
+POST ---> creating resource and persisting in DB
+PUT ---> modifying the resource
+DELETE --> deleting the resource
+GET ---> fetch the resource
+
+
+-- @RequestMapping over the class
+-- return type at controller, RequestEntity<?> addCourse(@RequestBody Course course) ---> @RequestBody converts JSON to
+Object
+-- @PostMapping("enter url here"), @GetMapping("enter url here"), @GetMapping('/{courseId}') @PathVariable Integer courseId
+   @RequestParam, @JsonFormat 
+
+-- return new ResponseEntity<>(course,HttpStatus.CREATED)
+
+-- Lombok: @Data--> to generate both getters and setters
+           @AllArgsConstructor
+           @NoArgsConstructor
+           @Getter
+           @Setter
+
+
+
+*** Spring Boot CRUD Example integration of in memory database H2 ***
+
+- H2 in memory data base mainly used for testing or test cases
+- couple of dependecies are required
+- Spring Data JPA, Spring Data is having multiple implemenatations consider it as 
+  an interface which is having implementations like JPA, MongoDB, Cassandra
+- spring data jpa and h2 is added, if you want to work with sql replace h2 with sql
+  driver, cassandra with cassandra driver
+
+- entity package is used to store objects into db
+
+entity/CourseEntity - Marked with @Entity telling jpa this object is 
+going to be stored in DB,@Table(name=""), @Entity must have primary key mark any
+of IV as @Id, @Generated(strategy = )
+
+
+- inside dao create CourseDao Interface and extend CrudRepository<CourseEntity,
+Integer>(it is )
+
+- now telling spring boot, to view h2 console, datasource to configure in application.properties
+
+  spring.h2.console.enabled=true
+  spring.datasource.url=jdbc:h2:mem:testdb(schema name)
+
+
+- inside dto create CourseRequestDTO(captures incoming req) and CourseResponseDTO(response should be captured in this and return)
+
+
+- inside service class, get the courseRequestDTO and convert it into CourseEntity(Important Point)
+  and save it into the db
+
+- use CourseDao method save to save the object in db
+
+- creating custom response
+
+  class ServiceResponse<T>{
+    private HttpStatus status;
+    private T response;
+  }
+
+
+
+*** miscellaneous notes ***
+
+- JPA(java persistence api) is a specification that tell how java objects should be mapped to database tables. It does
+  not provide actual database functions, it requires an implementation, it just define rules and interfaces.
+
+- JPA needs an implementation and this implementation is provided by Hibernate, OpenJPA.
+
+
+
+
+*** Things to need double down on ***
+
+- @JsonFormat annotation
+- JPA generation for primary keys
+
+
+
+*** Bean Validation ***
+
+- validate the information coming from the user.
+- spring boot starter validation ---> dependency
+
+annotations used in this dependency
+
+- @NotNull
+- @NotEmpty
+- @NotBlank - @NotNull + @NotEmpty
+- @Min and @Max
+- @Pattern
+- @Email
+
+
+inside courseRequestDTO:
+
+@NotBlank(message="Course name should not be null and empty")
+@NotEmpty(message="")
+
+
+@Min(value=1500,message="Course price cannot be less than 1500")
+@Max(value=5000,message="Course price cannot be above 5000")
+private Double fees;
+
+
+@Pattern(regexp="^[0-9]{10}")
+
+
+in order to trigger it
+
+- inside controller where in @RequestBody you are accepting it just append @Valid before courseRequestDTO
+
+*** Exception Handling ***
+
+- @RestControllerAdvice annotated over a class indicates that this is a global exception handler class
+  class ApplicationExceptionHandler
+  
+
+- @ExceptionHandler(MethodArgumentNotValidException.class) if you find error of this type just call below method
+  public ServiceResponse<?> handleMethodError(MethodArgumentException exception){
+   
+   ServiceResponse<?> sr=new ServiceResponse<>();
+   List<ErrorDTO> errorDTOList=new ArrayList<>();
+   exception.getBindingResult().getFieldErrors().forEach(error->{ErrorDTO err= new ErrorDTO(error.getMessage);
+	errorDTOList.add(errorDTO));
+
+   return sr;
+}
+
+
+
+
+- create an error DTO: List<ErrorDTO> error;
+
+
+
+*** LOGGING ***
+
+- logback contains : logback core and logback classic
+- logback(its the implementation class)
+- spring jcl(pulls above dependency) (spring commons logging)
+- java util logging, log4j2, logback(default provided)
+- spring boot started logging (dependency)
+- spring-boot-started-web (pulls above dependency)
+
+
+Logger - captures the event message.
+Formatter - Formats the message captured by logger.
+Handler - Dispatch the message by printing them in a file or console.
+
+-> creating logger object 
+   Logger log=LoggerFactory.getLogger(mention the class)
+
+-> Logging Level
+
+    - INFO (events occuring at runtime) (for prod and env)
+    - DEBUG (info abt flow of system) (for developer)
+    - WARN (changes due to deprecation)
+    - ERROR (runtime error)
+
+  ALL<TRACE<DEBUG<INFO<WARN<ERROR<FATAL<OFF ---> order of logging
+
+
+- To enable levels:
+
+a) logging.level.packageName.*=
+b) spring.output.ansi.enabled=true
+c) logging.file.name=file.log
 
 
 
 
 
 
-*** Spring boot restful webservices ***
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

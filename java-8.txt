@@ -55,9 +55,8 @@ h) BiConsumer<T,U>    (T,U)->void
 i) BiFunction<T,U,R>  (T,U)->R
 
 
-- you can pass lambdas directly to a function
-- For now, it suffices to understand that a lambda expression can be assigned to a variable or passed to a method
-  expecting a functional interface as argument.
+- you can pass lambdas directly to a function.
+- For now, it suffices to understand that a lambda expression can be assigned to a variable or passed to a method expecting a functional interface as argument.
 
 *** Annotation for fucntional interface is *** (@FunctionalInteface)
 
@@ -141,7 +140,262 @@ public class Test {
 
 
 
+*** Introducing Streams ***
 
+- How to process large collection of elements, how can you gain performance by leveraging multicore architectures.
+
+
+** what are streams ** (main purpose is to manipulate collections in an efficient way)
+
+- think of it as fancy iterator over collection of data.
+- helps you writing code in a declarative way.
+- you can chain several building block operations to express a complicated data processing piepline.
+- overall it helps in writing code that are declarative, composable-greater flexibility and parallelizable.
+
+*** chaining of stream operations to form a stream pipeline ***
+
+Q) What is a stream?
+
+- A sequence of elements from source that supports data processing operations.
+- Collections is all about storing data, streams are about computation
+- source here is collection
+- it provides many operations to manipulate the data
+- Streams are traversed only once, after that it is said to be consumed.
+- Streams work on internal iterations which can be parallalized whereas Collections works on external iteration
+
+- operations that help in creating a pipeline are called intermediate operations, and operation that ends a stream is
+  called as terminal operation.
+
+
+  source---->IO1------->IO2----->IO3------>Terminal
+
+- intermediate operations returns a stream which can be chained.
+- intermediate operations will not be executed until terminal operation is invoked, because they are lazy
+
+IMP: data items are processed unit wise, means one unit of data will complete the entire pipeline then the other.
+
+
+** Stream consists of datasource, bunch of intermediate operations and then the terminal operation **
+
+
+Intermediate Operations:
+
+- filter takes object of Predicate<T>
+- map takes object of Funtion<T,R>
+- limit
+- sorted takes object of comparator
+- distinct
+
+Terminal Operations:
+
+- forEach
+- count
+- collect
+
+
+
+*** Working with streams to be continued *** page number 118
+
+- stream api can run your code in parallel.
+
+------Filtering and Slicing-----------
+
+- Filtering with a predicate
+
+- filter method with the stream which makes use of a predicate.
+- distinct method can be also used with the stream, to give a stream of unique elements.
+- stream can be truncated, by using limit(number), the specified number of elements are picked from the beginning.
+- stream elements can be skipped, skip(number) discards the first mentioned number of elements.
+
+
+- Mapping with Funtion Function Interface, interface Funtion<T,R>
+
+- map is applied to each element, mapping it to a new element.
+
+
+- Flattening Streams
+
+  I/P = ["HELLO","WORLD"]
+   
+  O/P = ["H","E","L","O","W","R","D"]
+
+ 
+- initital thought: we will map on each string and return its character, then using distinct() intermediate operation will
+  get all the world
+
+- but the catch is map will not return Stream<String>, rather it returns Stream<String[]>
+
+
+** Flatmap ** - It amalgates multiple streams into one   
+
+- converts Stream<String[]> ----> Stream<String>  ---> start from page 127
+
+
+** Finding and Matching **
+
+- anyMatch method- Its a terminal operation and check whether elements in a given stream matches the given predicate or not
+  and it returs a boolean.
+
+- same goes with all match, all stream elements must match the given predicate.
+
+
+- findAny method returns an Optional if something has passed through the filter operation, its a terminal operation (works in conjunction with filter)
+- findFirst same working as findAny
+
+** Optional<T> **
+
+1) It helps in representing the existence and absence of values.
+
+2) isPresent() return true if value is present.
+
+** Reduce Functionality **
+
+- It works on BinaryOperator<T>
+- .reduce(0,(a,b)->a+b) 0 is the initial value assigned to a and first value to b, the result obtained is stored in a and 
+  further iterated elements are stored in b
+
+
+- Finding max value in a stream: num.stream().reduce(Integer.MIN,(a,b)->Math.max(a,b));
+- same thing goes for min value
+
+
+*** Numeric Streams ***
+
+- Stream API also provides primitive stream specilizations (IntStream, DoubleStream, LongStream) that supports several methods
+- methods are mapToInt, mapToDouble, mapToLong  --> returns a specialized stream instead of Stream<T>
+- with these streams u can use methods like sum
+
+- converting back to Stream<T>
+  
+  IntStream intS=transacion.stream().mapToInt(Dish::getCalories);
+  Stream<Integer> str=intS.boxed();
+
+
+*** Numeric Ranges ***
+
+- IntStream, DoubleStream and LongStream helps in generating ranges both closed and open
+- Static methods are defined on above Streams they are : range(exclusive) and rangeClosed(inclusive)
+- IntStream, DoubleStream, LongStream returns their respective *Stream mp=IntStream.range(1,100)
+- IntStream and others "map" will only return int, double and long, in order to return objects from them use mapToObj then it returns Stream<T> or after applying
+  filter to IntStream box it to apply map.
+
+
+*** Building Streams *** static methods present in Stream Class
+
+- Stream.of(any number of values separated by comma)
+
+- int num[]={1,2,3,4,5,6,7};
+  int sum=Arrays.stream(num).sum(); -----> it(Arrays.stream) returns IntStream 
+
+
+
+** Collecting Data With Streams ** (159)
+
+- Use of collectors: reducing stream elements in a single value, grouping elements and partitioning elements.
+- Integer.compare() method takes 2 paramters and returns <0 if a<b, >0 if a>b, =0 if a == b
+- thenComparingInt and compare 
+
+
+a) Finding maximum and minimum values making use of stream
+
+- .collect(Collectors.maxBy(takes a comparator))
+
+
+b) Summarization
+
+- use of method .collect(Collectors.summingInt)
+- use of method .collect(Collectors.averagingInt, Collectors.averagingLong, Collectors.averagingDouble)
+- use of method .collect(Collectors.summarizingInt)
+
+c) Joining Strings
+
+- read in detail about Collectors.joining() -> it makes of toString() method to return the data
+
+d) Generalized Summarization with reduction
+
+- Collectors.reducing() // terminal method (reduces stream of elements into one) 
+
+- BinaryOperator<T>-- > mainly used in reductions, reduce, Collectors.reducing, Optional.reduce. it is applied pairwise
+
+  result1 = op(e1,e2);
+  result2 = op(result1,e3);
+
+- overloaded Collectors.reducing
+
+a) Collectors.reducing(BinaryOperator<T> op)
+b) Collectors.reducing(T identity, BinaryOperator<T> op)
+c) Collectors.reducing(U identity, Function<T, U> mapper, BinaryOperator<U> op)  ===> can be easily subsituted by first using map operation and then applying terminal
+   operation
+
+
+
+*** collect vs reduce ***
+
+- done
+
+
+
+*** Grouping ***
+
+- use of Collector.groupingBy(expects the implementation of Function) -> the value returned by the "function" "apply" becomes the key, and corresponding to that key all
+  elements get added as list.
+ 
+  e.g)
+   
+  Map<Category,List<Dish>> arr=dishArr.stream().collect(Collectors.groupingBy(data->{
+            if(data.getPrice()<500) return Category.MID;
+            else if(data.getPrice() < 100) return Category.CHEAP;
+            return Category.EXPENSIVE;
+        }));
+
+
+
+*** MULTILEVEL GROUPING ***
+
+
+a) Map<String,Map<Category,List<Dish>>> mp=dishArr.stream().collect(Collectors.groupingBy(Dish::getType, Collectors.groupingBy(dish->{
+            if(dish.getPrice()<200) return Category.CHEAP;
+            else if(dish.getPrice()<500) return Category.MID;
+            return Category.EXPENSIVE;
+        })));
+
+
+b) Collecting data in subgroups(defalut implementation of groupingBy is Collectors.groupingBy(fn,Collectors.toList()))
+
+- Collectors.groupingBy(key function, here Collector be anything like Collectors.countin(), Collectors.maxBy())
+  
+  Comparator<Dish> cmp=Comparator.comparingInt(Dish::getPrice);
+  Map<String,Optional<Dish>> arr=dishArr.stream().collect(Collectors.groupingBy(Dish::getType,Collectors.maxBy(cmp))); // if the key does not have any value, then
+  the key wont be present.
+
+
+c) use of Collectors.collectingAndThen(takes a comparator,transforms it into another thing)
+  
+   Map<String,Dish> arr=dishArr.stream().collect(Collectors.groupingBy(Dish::getType,Collectors.collectingAndThen(Collectors.maxBy(cmp),Optional::get)));
+
+
+   collectingAndThen is applied after streaming has been done.
+
+d) Map<Dish.Type, Set<CaloricLevel>> caloricLevelsByType =
+menu.stream().collect(
+groupingBy(Dish::getType, mapping(
+dish -> { if (dish.getCalories() <= 400) return CaloricLevel.DIET;
+else if (dish.getCalories() <= 700) return CaloricLevel.NORMAL;
+else return CaloricLevel.FAT; },
+toSet() )));  understand this
+
+
+e) *Collectors.collectingAndThen v/s @Collectors.mapping inside Collectors.groupBy
+
+   
+   * -  transforms the final result to a collector, runs after the elements have been collected  
+   @ -  transforms each element before collecting, runs after all during stream processing
+
+
+
+**** Partition ****
+
+   
 
 
  
