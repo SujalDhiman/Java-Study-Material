@@ -1,0 +1,50 @@
+
+
+*** 2 Pointer & Sliding Window ***
+
+- Pattern 1:Constant Window:
+ 
+ [-1,2,3,3,4,5,-1] k=4
+   
+   l     r
+     l     r
+       l     r
+         l     r
+
+sum= 7, .....
+
+
+- Pattern 2:Longest Subarray/Substring where condition:
+
+   
+   [2,5,1,7,10] k=14
+
+
+- Better solution:
+  
+  -  expand(r) and shrink(l)
+
+
+     l=0,r=0,sum=0,maxLen=0;
+
+     while(r<n){
+            
+         sum+=arr[r];
+         while(sum>k){
+           sum-=arr[l];
+           l+=1;
+         }
+         if(sum<=k)
+            maxLen=max(maxLen,r-l+1);
+         r+=1;
+      }
+                  
+         
+- Pattern 3: Number of subarrays with condition
+
+
+
+Problem 1) Max consecutive ones
+                
+
+          

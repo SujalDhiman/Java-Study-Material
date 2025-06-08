@@ -1,0 +1,18 @@
+
+
+*** Switch vs HUB ***
+
+- switch works at layer 2 and makes use of mac address.
+- provides connectivity within same area between different computers connected through switch.
+- unlike hub it does not broadcast messages to all recipients but rather to targeted one.
+- communication on the same network
+- allow devices to communicate on same network
+
+*** Router ***
+
+-  main job is to connect networks
+-  when there is 2 different networks and person on A network tries to ping person on network B, the arp req sent from A
+   is routed towards default gateway to identify router mac address.
+-  gateway is also known as router
+-  router just works on IP
+

@@ -1,3 +1,118 @@
-Spring Boot Actuator Explore - actuator
-Spring basics
-java revision
+- nodes text, nodes custom images, nodes interaction, color, node label, node size, node grouping
+
+pending: node with images, text below nodes, shapes, default html type displays
+
+
+
+ctx object (Canvas Instance)
+
+- instance properties
+
+  - fillStyle - sets the color, gradient to fill shapes
+  - strokeStyle - sets the color, gradient to for stroke 
+  
+   TEXT STYLING
+  - font
+  - textAlign
+  - textBaseline
+  - direction
+
+   IMAGE SOOTHING
+  
+  - imageSoothingEnabled
+  - imageSoothingQuality - low, medium or high
+ 
+   METHODS
+ 
+   Category 1: Drawing Shapes
+
+  - ctx.beginPath() --> starts a new drawing path, without this, all shapes will be interconnected. Always use
+    before starting a new shape else all shapes will be connected
+
+  - ctx.moveTo(x,y) --> moves the drawing pen to the mentioned coordinates
+
+  - ctx.lineTo(x,y) --> draws the straight line from point x to point y
+   
+  - ctx.closePath()
+
+  - ctx.arc(x,y,radius,startangle,endangle) 
+
+  - ctx.rect(x,y,width,height)
+     
+   Category 2: Text Drawing
+
+  - ctx.fillText(text,x,y)
+  - ctx.measureText(text) --> return height and width of the text
+
+   
+   Category 3: Fill and Stroke
+
+  - ctx.fill() - fills the current path with fillStroke
+  - ctx.stroke() - gives the outline to the current path
+
+
+   *** pending *** (Showing tooltip popups or interactive labels?)
+   
+   Category 4: Embedding Images
+
+   - ctx.drawImage(img,x,y,width,height)
+   
+
+
+Q1) When does collision occurs, when distance between is less than the colliding distance, how is this distance calculated by d3.
+A)  when distance between 2 nodes is less than the sum of their radii.
+    1) distance is calculatd by formula Math.sqrt((x2-x1)^2 + (y2-y1)^2)
+  
+Q2) If the distance between the 2 centres is less than the colliding distance returned by d3force, then collision and rearrangement occurs.
+A)  when the distance between 2 centres is less than the colliding distance, then the collision occurs.  
+
+Q3) Have to embed images inside circle.
+Q4) What is node.__width are we setting properties dynamically on node objects that we are receiving in parameters.
+A)  Yes these are the properties added by the developer e.g node.__width= give any custom value.
+
+
+*** hot take *** - d3 sees every node as a circle only with some radius, so that the collision detection system can work properly
+
+- we assume every image to be inside an imaginary circle.(to cover worst case distance from centre to corner)
+- 
+
+
+
+*** Directional Arrows ***
+
+- linkDirectionalArrowLength={3.5}
+  linkDirectionalArrowRelPos={1}
+  linkCurvature={0.25}
+
+
+*** Directional moving particles ****
+
+-  linkDirectionalParticles="value"
+   linkDirectionalParticleSpeed={d => d.value * 0.001}
+
+*** Auto color links and nodes ***
+
+-  nodeAutoColorBy={d => d.id%GROUPS}
+   linkAutoColorBy={d => gData.nodes[d.source].id%GROUPS}
+
+
+*** fix nodes after dragging ***
+
+-  onNodeDragEnd={node => {
+            node.fx = node.x;
+            node.fy = node.y;
+            node.fz = node.z;
+          }}
+
+
+
+
+**** Todays Task Replicate the triggers view which has been made using react vis network graph ****
+
+- create sample nodes (done)
+- create text and labels
+- insert images
+- write collision detection code
+- add interaction
+- add drag nodes feature
+- make it visually appealing

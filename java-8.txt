@@ -395,6 +395,32 @@ e) *Collectors.collectingAndThen v/s @Collectors.mapping inside Collectors.group
 
 **** Partition ****
 
+- Partitioning is a special case of grouping: having a predicate (a function returning a boolean), called a partitioning function , as a classification function.
+  The fact that the partitioning function returns a boolean means the resulting grouping Map will have a Boolean as a key type and therefore there can be at most two
+  different groups—one for true and one for false.
+
+
+
+*** Collectors static methods ***
+
+- Collectors.toList -> return List<T> , gathers all element in a list
+- Collectors.toSet -> return Set<T>, gathers all element in a set
+- Collectors.counting -> Long, count the total elements present in a stream
+- Collectors.summingInt -> Integer, sum the values of integer items in the stream
+- same averagingInt ->
+- Collectors.summarizingInt -> return object of IntSummary, returns the object which contains all info related to max, min, sum and avg value info.
+- Collector.joining() -> returns String, concatenates all the string elements present inside a stream
+- Collectors.maxBy -> requires a Comparator and returns Optional<T>
+- Collectors.minBy -> requires a Comparator and returns Optional<T>
+- Collectors.reducing ->
+- Collectors.collectingAndThen() -> comparators, helps in converting by applying a transformation function to its result
+- Collectors.groupingBy -> 
+- Collectors.partitioningBy ->
+
+
+
+*** to start with Collector Interface *** 
+
    
 
 

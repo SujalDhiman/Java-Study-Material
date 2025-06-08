@@ -301,7 +301,46 @@ exception you should provide exception handlers
 ** write what all has been understood
 ** why can't we initialize array of type class, java does not allow creation of generic type arrays
 ** you cannot instantiate type variable
-** start from 410-417
+
+
+*** Difference between T vs ?
+
+- generics are invariant it means types should match exactly.
+
+  Pair<T extends Employee> -> Pair<Employee> and Pair<Manager> are valid
+                
+                    but 
+
+  Pair<Employee> is not equal to Pair<Manager> though Manager extends Employee.
+
+
+
+*** Collections ***
+
+- Collection Interface
+- Iterator Interface has 4 methods: next(), hasNext(), remove(), forEachRemaining() 
+
+
+
+** Linked List ***
+
+*** ArrayList ***
+
+*** HashSet ***
+
+- HashSet() -> creates an empty hashset
+- HashSet(Collection<? extends E> elements) --> creates a hashset
+  and adds all elements from a collection
+- HashSet(int initialCapacity)
+- HashSet(int initialCapacity, float loadFactor)
+
+
+- learnt about hashing, loadfactor, what happens when same entries are encountered.
+
+
+
+
+
 
 
 

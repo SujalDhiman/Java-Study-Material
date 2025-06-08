@@ -1,0 +1,120 @@
+
+*** Commands ***
+
+sudo service xrdp start
+
+password: ghost123
+username: ghost
+
+- whoami
+- ls --> list
+- cd --> change directory
+- pwd --> where are you
+- / denotes the root of the file system
+- clear --> clears the terminal
+- cat ---> to open a file
+- cp sourceFile destinationFile --> copy
+- rm fileName --> remove
+- which commandname --> which ls
+- 
+
+
+
+** at the root of file system you find many things ***
+
+- everything is a file
+
+- bin - binaries(we have command binaries)
+- sbin - super bin(commands which administrators use)
+- e.g of command inside sbin e.g adduser
+- sudo adduser username
+
+- usr - inside this also we have bin and sbin
+- boot- files systems need to boot
+- var - web or log related files
+- tmp - folder that goes away when system restarts
+- home - all the user who have logged
+- dev - for devices
+- mnt and media - detects mounting of devices e.g usb
+
+
+
+*** Help command ***
+
+- which shell you are using
+- ps
+
+$- means you are logged in as the user
+# - means root
+
+-- man ls
+-- man uname
+-- man ip
+-- uname --help
+-- apropos usb --> just write anything and the documentation
+will be searched and will list all the related commands.
+
+
+
+/root - home for root user
+/etc - linux config files
+/home - users home direc
+/mnt - mounted systems
+/media - cds and usb
+/bin - binaries reside
+/lib - libraries
+
+
+*** commands ***
+
+- pwd --> where are you currently
+- whoami --> to check whether you are root user
+  or normal
+- cd --> change directory
+- ls --> list contents
+- any command --help
+- man <command>
+- locate aircrack-ng
+- whereis <command> --> helps in identifying
+  binaries
+
+
+- find command is the most powerful
+
+-- find / -type f -name apache2
+
+it means start finding from / the type is a file
+and its name is apache2
+
+-- ps --> process related details
+-- cat > filename --> creates a file
+-- ctrl D to save content
+-- cat filename --> to read its content
+-- cat >> filename --> to append more data
+-- mkdir directoryname
+-- cp oldfile newfile
+-- rm filename
+-- rmdir directoryname
+- 
+
+
+*** File System ***
+
+- head--> displays first 10 lines of the file by default
+
+- head -<total lines to display> <fileNames>
+
+- same for tail
+
+- nl <filenName> - number lines present in a file
+
+- sed command
+
+- man sed
+
+*** some examples of sed ***
+
+- sed 's/foo/bar/' file.txt
+- sed '/ERROR/d' file.txt
+- sed -n '/SUCCESS/p' file.txt
+- 

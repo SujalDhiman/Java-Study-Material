@@ -286,20 +286,235 @@ c) logging.file.name=file.log
 
 
 
+*** Spring Boot Actuator *** (helps in monitoring
+application in the production)
+
+- spring boot actuator exposes some endpoints which
+give lot of information abt ur system
+
+- dependency: Spring Boot Actuator
+
+- after running it exposes a new endpoint: localhost:port/actuator
+
+- to enable all endpoints in application.properties write:
+ management.endpoints.web.exposure.include=*
+
+- some questions:
+
+- use of @Sl4j annotation (study about logs) ------ done
+- use of ObjectMapper --> converts java objects to JSON ---- done
+
+
+- info endpoint of actuator, explore logfile endpoint
+
+question on this
+
+- check how to enable info endpoint through application.properties---> done
+- how to set info properties like in application.properties ---> done, properties to first expose info and then to show
+  all env related data management.info.env.enabled=true
+- how to set info properties using .yml file ---> done
+
+- to add dynmaic data to info route ---> use InfoContributor interface
+- creating a custom endpoint and using inside actuator ---> pending
+
+
+
+** Question **
+
+- how to access properties listed inside application.properties
+
+a) @Value annotation: e.g @Value("${app.name}")
+
+b) Using Environment class, just autowire it and use e.g env.getProperty("info.app.name")
+
+
+
+*** behind the scene working of email ***
+
+- SMTP only stands ASCII text not binary, but pdfs, attachments are all binaries
+- Base64 is an encoding algorithm that takes in binary values and converts them to ASCII
+
+
+
+*** Spring Boot Email Integration ***
+
+- Java Mail Sender dependency to be added
+
+
+- in application.properties or application.yml
+
+a) spring.mail.host= smtp.gmail.com
+   spring.mail.port=587
+   spring.mail.username=sujaldhiman2003@gmail.com
+   spring.mail.password=
+   spring.mail.properties.mail.smtp.auth
+
+
+
+b) Autowire JavaMailSender
+
+c) now create object of SimpleMailMessage and set all properties
+   of it
+
+d) SimpleMailMessage smp=new SimpleMailMessage()
+   smp.setFrom();
+   smp.setTo();
+   
+e) javaMailSender.send(smp);
+
+f) MimeMessage mimeMsg = new MimeMessage() -> used when attachements
+   are also there
+
+
+
+*** heirarchy drill down ***
+
+- SimpleMailMessage
+
+
+
+Properties to be set:
+
+- host, username, password, port and security properties
+
+Classes and Interfaces Involved:
+
+- MailSender
+
+- JavaMailSender
+
+- JavaMailSenderImpl
+
+- SimpleMailMessage
+
+- MimeMessagePreparator
+
+- MimeMessageHelper
+
+
+
+**** New topic regarding Streams ****
+
+- InputStream--> use to read from a source, reads byte by byte, good for reading pdfs,images
+ 
+- OutputStream--> writing to a source
+
+both above inputstream and output stream deals in raw bytes, above just move bytes here and there
+
+-- for byte streams classes responsible are InputStream and OutputStream
+-- for character streams classes responsible are Reader and Writer
+
+
+Java I/O is basically divided into 2 categories:
+
+- Byte Streams  - Binary Data --> main interfaces InputStream and OutputStream  --> FileInputStream, FileOutputStream
+
+- Character Streams  - Text Data --> main interface Reader and Writer --> FileReader and FileWriter
+
+
+*** Proper Distinctions ***
+
+- FileInputStream --> reads byte wise from source, and you get a byte source
+
+- InputStreamReader --> coverts byte stream to character stream
+
+- FileReader --> reads character wise and you get a character stream
+
+- BufferedReader --> works on character stream
+
+-  
+
+
+-- topics to cover
+
+a) All Input and Output Streams
+b) Sending basic mails
+c) Handling Files at backend
+d) How are files actually transferred, meaning conversion to byte stream over network 
+   and how in backend database to save
+   
+
+
+
+-- distinguish between: MimeMessage and MimeMessageHelper
+-- Multipart
+
+
+
+*** some key question during file handling at backend ****
+
+How does a file from your local machine travel over the network to a backend server?
+
+What happens behind the scenes in HTTP during a file upload?
+
+How is the file referenced from the local machine and included in a request (like Postman or a web app)?
+
+How does the server (like Spring Boot) receive and reconstruct the file?
+
+What protocols, headers, encodings, and technologies are involved?
+
+
+-- things done learnt how to handle file, more stuffs to work upon, distinguish between still pending
 
 
 
 
+*** Spring Scheduler ***
+
+- scheduler 
+
+a) why to use it
+b) what are the real life usecases
+
+- some piece of code to automate using time intervals
+
+create a new project
+
+-> dependencies: lombok, spring web, h2, spring data jpa, 
+java mail sender, apache poi--> to generate excel file
+
+-> generating excel file steps
 
 
+--> in excel first row is header, and divided into row and column
+
+1) each segment is a cell
 
 
+SXSSWorkbook workbook = new SXSSWorkbook();
+Sheet sheet = workbook.createSheet();
+
+--> first set the header
+ 
+Row headerRow = sheet.createRow(0);
+Cell headerCell = headerRow.createCell(0);
+headerCell.setCellValue("ORDER_ID");
+
+headerCell = headerRow.createCell(1)
+headerCell.setCellValue("ORDER_NAME")
 
 
+--> creating byte array to a resource
 
 
+- create a folder as service
+- inside that inject the service bean which u want to run
+- e.g @Autowired NotificationService service;
+- to enable scheduling: @EnableScheduling (should be kept
+above the service class responsible for handling scheduling)
 
+@Scheduled(fixedRate = 3000)
+public void process(){
+}
 
+@Scheduled annotation should be written above the method
+responsible for calling a particular service
+
+@Scheduled(cron="")
+
+- read about cron expression
+
+** what if method took too long to execute and job is triggered?
 
 
 
