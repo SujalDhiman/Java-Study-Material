@@ -3,11 +3,11 @@
 - sequence of data items moving one by one.
 - continuous flow of data that a program processes.
 
+- anonymous classes- classes that do not have a name, but allow you to create and instantiate a interface.
 
+--- behaviour parameterization --- deep dive on this term (important term to ponder upon, has a lot of hidden meanings)
 
---- behaviour parameterization --- deep dive on this term
-
-*** lambda expressions *** -- alternate to anonymous function
+*** lambda expressions *** -- alternate to anonymous function (helps in achieving behaviour parameterization)
 
 - it is a short way of writing a function wihtout giving it a name.
 - it can be defined as a concise representation of an anonymous function that can be passed around.
@@ -37,8 +37,10 @@ anonymous- it does not have a name unlike other methods have.
 
 *** Functional Interface *** --> it has only one abstract method
 
+- Lambda expressions helps you to provide implementation of the abstract methods inline and concisely.
+
 - An interface is still a functional interface if it has many default methods as long as it specifies only one abstract
- method
+  method (important point to remember)
 
 - lambdas helps in providing implementation of the abstract method of the functional interfaces directly inline.
 
@@ -55,6 +57,9 @@ h) BiConsumer<T,U>    (T,U)->void
 i) BiFunction<T,U,R>  (T,U)->R
 
 
+- new functional interfaces are inside the package java.util.Function
+
+
 - you can pass lambdas directly to a function.
 - For now, it suffices to understand that a lambda expression can be assigned to a variable or passed to a method expecting a functional interface as argument.
 
@@ -68,7 +73,7 @@ interface Predicate<T>{
     boolean test(T t);
 } 
 
-b) Consumer
+b) Consumer --> used in forEach
 
 interface Consumer<T>{
     void accept(T t);
@@ -90,17 +95,19 @@ are also present example IntPredicate, DoublePredicate,
    }
 
 
-f) Boxed values like Integer occupies more memory as they create objects which are stored in heap.
+f) Boxed values like Integer occupies more memory as they create objects which are stored in heap. Has its own limitation in terms of speed and memory utilizations
 
 
-*** Usage of local variables with lambdas ***
+*** Usage of local variables with lambdas *** (has a proper explanation why such behavious is there)
 
-- if you want to use variables other than parameter of function inside lambda, then those variables should be defined as
+- if you want to use variables other than static, instance and parameter of function inside lambda, then those variables should be defined as
 final.
 
 - or you make sure the variable you are using does not changes anywhere througout the code.
 
-- Question is why there is restriction on local variables?
+- local variables should be marked as final
+
+- Question is why there is restriction on local variables? (answer i have read, just recall)
 
 
 *** Method Reference ***
@@ -139,7 +146,6 @@ public class Test {
 }
 
 
-
 *** Introducing Streams ***
 
 - How to process large collection of elements, how can you gain performance by leveraging multicore architectures.
@@ -149,7 +155,7 @@ public class Test {
 
 - think of it as fancy iterator over collection of data.
 - helps you writing code in a declarative way.
-- you can chain several building block operations to express a complicated data processing piepline.
+- you can chain several building block operations to express a complicated data processing pipeline.
 - overall it helps in writing code that are declarative, composable-greater flexibility and parallelizable.
 
 *** chaining of stream operations to form a stream pipeline ***
@@ -212,6 +218,8 @@ Terminal Operations:
 
 - map is applied to each element, mapping it to a new element.
 
+- Arrays::stream -> take each array element and converts it into stream of elements
+
 
 - Flattening Streams
 
@@ -234,19 +242,20 @@ Terminal Operations:
 ** Finding and Matching **
 
 - anyMatch method- Its a terminal operation and check whether elements in a given stream matches the given predicate or not
-  and it returs a boolean.
+  and it returs a boolean. Inside anyMatch you have to give a predicate.
 
 - same goes with all match, all stream elements must match the given predicate.
 
+*** continue from here ***
 
-- findAny method returns an Optional if something has passed through the filter operation, its a terminal operation (works in conjunction with filter)
+- findAny method returns an Optional if something has passed through the filter operation, its a TERMINAL operation (works in conjunction with filter)
 - findFirst same working as findAny
 
 ** Optional<T> **
 
 1) It helps in representing the existence and absence of values.
 
-2) isPresent() return true if value is present.
+2) isPresent() return true if value is present., .get() and ifPresent(Consumer<T> cons)
 
 ** Reduce Functionality **
 
@@ -262,7 +271,8 @@ Terminal Operations:
 *** Numeric Streams ***
 
 - Stream API also provides primitive stream specilizations (IntStream, DoubleStream, LongStream) that supports several methods
-- methods are mapToInt, mapToDouble, mapToLong  --> returns a specialized stream instead of Stream<T>
+- these streams are applied because of the overhead of boxing and unboxing, which causes some performance issues.
+- methods are mapToInt, mapToDouble, mapToLong  --> returns a specialized stream like IntStream instead of Stream<T>
 - with these streams u can use methods like sum
 
 - converting back to Stream<T>
@@ -289,8 +299,9 @@ Terminal Operations:
 
 
 
-** Collecting Data With Streams ** (159)
+** Collecting Data With Streams ** - use of Collectors utility class
 
+- use of comparator class, Comparator.comparingInt() and Integer.compare()
 - Use of collectors: reducing stream elements in a single value, grouping elements and partitioning elements.
 - Integer.compare() method takes 2 paramters and returns <0 if a<b, >0 if a>b, =0 if a == b
 - thenComparingInt and compare 
@@ -304,16 +315,23 @@ a) Finding maximum and minimum values making use of stream
 b) Summarization
 
 - use of method .collect(Collectors.summingInt)
-- use of method .collect(Collectors.averagingInt, Collectors.averagingLong, Collectors.averagingDouble)
-- use of method .collect(Collectors.summarizingInt)
 
-c) Joining Strings
+- use of method .collect(Collectors.averagingInt, Collectors.averagingLong, Collectors.averagingDouble)
+
+- use of method .collect(Collectors.summarizingInt), it returns instance of class IntSummaryStatistics which include getters for count, sum, min, avg and max
+
+
+c) Joining Strings (internally calls the two string method)
 
 - read in detail about Collectors.joining() -> it makes of toString() method to return the data
 
 d) Generalized Summarization with reduction
 
-- Collectors.reducing() // terminal method (reduces stream of elements into one) 
+- Collectors.reducing() // terminal method (reduces stream of elements into one)
+
+- It takes 3 arguments, first initial value, 2nd the mapper function and 3rd the BinaryOperator function interface used in reduce
+
+** key point ** - if any Collectors utility method is taking mapper function then you can directly call on stream. 
 
 - BinaryOperator<T>-- > mainly used in reductions, reduce, Collectors.reducing, Optional.reduce. it is applied pairwise
 
@@ -353,12 +371,19 @@ c) Collectors.reducing(U identity, Function<T, U> mapper, BinaryOperator<U> op) 
 *** MULTILEVEL GROUPING ***
 
 
+- Below code can be used if based on conditions you want to set a key, rather than using getter on a object. 
+
 a) Map<String,Map<Category,List<Dish>>> mp=dishArr.stream().collect(Collectors.groupingBy(Dish::getType, Collectors.groupingBy(dish->{
             if(dish.getPrice()<200) return Category.CHEAP;
             else if(dish.getPrice()<500) return Category.MID;
             return Category.EXPENSIVE;
         })));
 
+
+- You can go with MULTILEVEL grouping as well - 
+
+  example .collect(Collectors.groupingBy(Dish::getType,Collectors.groupingBy(Dish::getPrice)))
+  
 
 b) Collecting data in subgroups(defalut implementation of groupingBy is Collectors.groupingBy(fn,Collectors.toList()))
 
@@ -385,11 +410,16 @@ else return CaloricLevel.FAT; },
 toSet() )));  understand this
 
 
+-- START FROM HERE
+
+
 e) *Collectors.collectingAndThen v/s @Collectors.mapping inside Collectors.groupBy
 
    
-   * -  transforms the final result to a collector, runs after the elements have been collected  
-   @ -  transforms each element before collecting, runs after all during stream processing
+- Collectors.mapping - Used when before collecting the object you want to transform it into some format of data.
+
+- Collectors.collectingAndThen - to process after collecting the data, Collectors.collectingAndThen(downstream, finisher), downstream is basically resp. for collecting
+  data.
 
 
 
@@ -419,7 +449,12 @@ e) *Collectors.collectingAndThen v/s @Collectors.mapping inside Collectors.group
 
 
 
-*** to start with Collector Interface *** 
+*** to start with Collector Interface ***
+
+- 
+
+
+
 
    
 

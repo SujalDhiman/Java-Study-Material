@@ -1,0 +1,28 @@
+JPA Lecture 1:(Jakarta Persistence API)
+
+- JPA is nothing but specification.
+- In JDBC queries are executed on the database.
+- In JPA queries are executed on the context, the context contains objects(entities),
+  now when operation are performed they are done on context not on DBMS.
+- Now the context interacts with database accordingly
+
+
+- Through EntityManager we operate on context, and we get it through EntityManagerFactory
+
+  
+EntityManagerFactory emf = Peristence.createManagerFactory()
+
+EntityManager em = emf.createEntityManager()
+
+
+em.getTransaction().begin()
+
+Product p = new Product()
+
+em.persist(p); // add this to context--> not an insert query
+
+
+em.getTransaction.commit()
+
+
+

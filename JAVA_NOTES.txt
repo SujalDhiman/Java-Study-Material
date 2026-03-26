@@ -1,0 +1,42 @@
+GENERIC:
+
+1) Define a generic class
+
+2) Defining a single method with type parameters, how to call this method
+
+3) Bound for type variables
+
+4) Type Erasure (give sample what the code looks like after the type erasure)
+
+5) Type Erasure for Bounded and Unbounded Types
+
+6) What are bridging methods
+
+7) Restrictions:
+
+a) primitive types can never be inside angle brackets. Answer is type erasure think and write your answer
+
+b) you cannot use instance of ArrayList<String>, because during runtime JVM does not know what is ArrayList<String>
+
+c) you cannot create array of parameterized types **
+
+d) you cannot instantiate type variables new T()
+
+e) you cannot create a generic array no new T[10]
+
+f) Type variables are not used with static variables in a generic class
+
+
+8) Wildcards introduction (the Invariance wall) both are invariant get this point very well
+
+9) <? extends T> -- explain it to the fullest
+
+10) <? super T> -- explain it to the fullest
+
+11) <?> what does this enforce
+
+
+
+Usage:
+
+1) 

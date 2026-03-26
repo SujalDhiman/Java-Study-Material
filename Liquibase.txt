@@ -1,0 +1,159 @@
+- What is Liquibase?
+
+Liquibase is an open-source database version control tool — it helps track, 
+version, and apply changes to a database schema in a consistent and automated way.
+
+Think of it as Git for your database schema.
+
+
+- How Liquibase Works
+
+Liquibase uses two special tables inside your database to manage state:
+
+Table	Purpose
+DATABASECHANGELOG	Stores all applied change sets (id, author, timestamp, checksum, etc.)
+DATABASECHANGELOGLOCK	Ensures only one Liquibase instance runs at a time, to prevent race conditions
+
+So whenever you start your app, Liquibase:
+
+Reads your changelog files (like master-changelog.xml).
+
+Checks DATABASECHANGELOG to see which changes are already applied.
+
+Applies only new changes.
+
+Logs them into DATABASECHANGELOG.
+
+
+- <databaseChangeLog>
+
+This is the root element of any Liquibase changelog file.
+
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+       http://www.liquibase.org/xml/ns/dbchangelog
+       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.23.xsd">
+    
+    <!-- Changes will go here -->
+</databaseChangeLog>
+
+
+- <changeSet>
+
+Each <changeSet> represents one atomic change — something that can be applied and rolled back as a single unit.
+
+It must have two attributes:
+
+id: unique ID for the change (within this file)
+
+author: person who wrote it
+
+Example:
+
+<changeSet id="1" author="sujal">
+    <createTable tableName="users">
+        <column name="id" type="INT" autoIncrement="true" />
+        <column name="username" type="VARCHAR(100)" />
+        <column name="email" type="VARCHAR(150)" />
+        <primaryKey columnNames="id" />
+    </createTable>
+</changeSet>
+
+
+Liquibase will:
+
+Run this only once.
+
+Record it in DATABASECHANGELOG.
+
+Skip it next time automatically.
+
+
+- <property>
+
+You can define variables or constants for reuse.
+
+<property name="user_table" value="users" />
+
+<changeSet id="3" author="sujal">
+    <addColumn tableName="${user_table}">
+        <column name="phone" type="VARCHAR(15)" />
+    </addColumn>
+</changeSet>
+
+
+- <include file="...">
+
+Used to split large changelogs into smaller files and include them in one master file.
+
+Example:
+
+<databaseChangeLog>
+    <include file="changelog/create-tables.xml" />
+    <include file="changelog/insert-data.xml" />
+</databaseChangeLog>
+
+
+This helps you structure your project cleanly (one changelog per feature or module).
+
+
+- master-changelog.xml
+
+Think of this as the entry point for Liquibase — the main file that includes all other changelogs.
+
+Example:
+
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+       http://www.liquibase.org/xml/ns/dbchangelog
+       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.23.xsd">
+
+    <property name="now" value="CURRENT_TIMESTAMP" />
+
+    <include file="changelog/001-create-user-table.xml" />
+    <include file="changelog/002-add-orders-table.xml" />
+    <include file="changelog/003-add-phone-column.xml" />
+
+</databaseChangeLog>
+
+Step 2: What <includeAll> Does
+
+Syntax:
+<includeAll path="relative/path/to/folder" />
+
+Liquibase scans the folder you specify.
+
+Finds all XML or SQL changelog files inside it.
+
+Executes them in alphabetical order.
+
+
+- schema/alter/ — Modifications to existing tables
+
+Many companies use plain SQL scripts here because they already have complex alter statements.
+
+Example: 002-alter-user-add-phone.sql
+
+ALTER TABLE user ADD COLUMN phone_number VARCHAR(20);
+
+
+Liquibase can directly run .sql files too!
+All you need is to include them using <sqlFile> or <includeAll>.
+
+Example XML wrapper:
+
+<databaseChangeLog>
+    <changeSet id="002" author="sujal">
+        <sqlFile path="db/changelog/2025/schema/alter/002-alter-user-add-phone.sql" />
+    </changeSet>
+</databaseChangeLog>
+
+
+OR, if the master file has <includeAll path="db/changelog/2025/schema/alter" />, Liquibase reads these .sql files automatically.
+
+

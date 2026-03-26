@@ -1,0 +1,42 @@
+Q) What are Transactions?
+
+A transaction is a sequence of one or more database operations (SELECT, INSERT, UPDATE,
+DELETE, DDL sometimes) that the DBMS treats as a single logical unit of work. The DBMS ensures
+either all operations in the transaction succeed (become permanent) or none do.
+
+
+
+Constraints in MYSQL:
+
+- NOT NULL: create table students (student_id varchar(100) NOT NULL)
+
+- UNIQUE: create table students (student_id INT NOT NULL)
+
+- PRIMARY KEY: create table students (student_id PRIMARY KEY)
+
+- FOREIGN KEY: create table employees (dept_id INT, FOREIGN KEY dept_id references
+  Department(dept_id))
+
+- AUTO_INCREMENT: create table employees (student_id INT AUTO_INCREMENT PRIMARY KEY)
+
+
+
+TRANSACTION SYNTAX:
+
+BEGIN TRANSACTION;
+
+statements;
+
+COMMIT;
+
+
+
+Q) What are cascades and triggers?
+
+Q) What are Isolation Levels?
+
+- Repeatable Reads -- Done
+
+Q) Setting Isolation Levels in MySql?
+
+Q) set autocommit=0? what does it do?

@@ -1,0 +1,32 @@
+Scalability:
+
+- ability of the system to cope with the increasing load.
+
+What is Load?
+
+- load can be anything for servers it could be requests/sec, for databases it could be data volume.
+
+
+fan-out meaning - one service makes request to other services to process one incoming request.
+
+Twitter Case Study: (Read to Write lopsidedness)
+
+- Post Tweet: 12,000 req/sec, modern databases can handle it efficiently
+
+- Home Timeline: This is all about getting the posts from all the people you follow (read intensive), 300k req/sec.
+
+
+An imbalance was created between the read and write operation.
+
+First Attempt: Joins were made between users, tweets and follower table to populate the relevant data. We know joins are computationally expensive and 300kreq/sec can 
+just melt our databases. for quite a long time we sticked to this approach only.
+
+
+Second Attempt: create separate cache for each follower meaning suppose a user u1 has followers f1, f2 and f3. f1, f2 and f3 will maintain their separate caches as soon
+as user u1 posts something, all the followers of u1 are narrowed down and specific writes are made in the followers cache. So that whenever f1, f2 and f3 requires post,
+it will be a constant O(1) look up in their caches. All heavy computations are excluded from the process.
+
+Currently twitter is making use of both the approaches for the users with minimum followers twitter is going with 2nd attempt for individuals who posses a large follower
+count they are being identified and first attempt is put into action.
+
+

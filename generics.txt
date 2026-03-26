@@ -1,0 +1,161 @@
+Java Generics
+
+- Helps in type safety at compile time only.
+
+- List cars is different from List<Car> cars
+
+- List cars would require casting but List<Car> wont
+
+- java generics in our own classes
+
+
+1) class myGeneric{
+
+   public <T> void add(T element, List<T> list){
+    	
+        list.add(element);
+   }
+
+   
+   public <T> T addAndReturn (T element, List<T> list){
+	
+	list.add(element)
+        return element;
+   }
+
+}
+
+2) now this class can be called by List and element of different types
+
+3) here the instance of myGeneric is not bound to any type
+
+4) to create instance of myGeneric to a particular type
+
+
+   class myGenericClass<T>{
+
+    
+   public <T> void add(T element, List<T> list){
+    	
+        list.add(element);
+   }
+
+   
+   public <T> T addAndReturn (T element, List<T> list){
+	
+	list.add(element)
+        return element;
+   }
+}
+
+
+5) <T> in front of method declaration hides the type parameter <T> mentioned in
+   class, double down on this
+
+    in point 4
+
+    myGenericClass<String> genericClass = new myGenericClass<>();
+
+    List<Car> cars = new ArrayList<>();
+    genericClass.add(new Car(4), cars)
+
+
+    Car car = genericClass.addAndReturn(new Car(2), cars)
+
+    List<Trucks> trucks = new ArrayList<>();
+
+    Truck truck = genericClass.addAndReturn(new Truck(3000,6,2,18000), trucks)
+
+
+    the type parameter in front of method declaration shadows <T> of class which is String
+
+
+6)  if we remove <T> in front of method declaration, then error comes then it takes
+    type from mentioned on the object/class
+
+
+7)  concept of generic wildcards
+
+
+- Parent has 2 subclasses ChildA and ChildB
+  
+
+  List<Parent> p=new ArrayList<>();
+  List<ChildA> ca = new ArrayList<>();
+  List<ChildB> cb = new ArrayList<>();
+
+   
+  processParent(p)
+  processParent(ca) -> error even though they are subclasses of parent
+  processParent(cb) -> error
+
+
+  public static void processParent(List<Parent> elements){
+
+    Parent parent = elements.get(0);
+    elements.add(new Parent())
+}
+
+
+
+- In order to solve this problem we have generics wildcard
+
+  public static void processAnyParent(List<?> elements){
+
+    Object parent1 = elements.get(0);
+
+    Parent parent2 = elements.get(0); // we dont know type
+
+    elements.add(new Object()) // error here, because at this time we dont know
+    what type this list will have, even new Object() is not allowed
+}
+ 
+
+-  public static void processAnyParent(List elements){
+
+    Object parent = elements.get(0);
+
+    elements.add(new Object()) // now work because there are no types
+}
+   
+ 
+
+- 2 new modifications:
+
+
+a) public static void processParentSubClass(List<? extends Parent> elements){
+
+    Parent parent = elements.get(0); // can get easily
+
+    elements.add(new Object()) // now work because there are no types
+
+    // puts restriction on writing
+} 
+   
+    processParentSuperClass(p)
+    processParentSuperClass(ca) // all valid
+     processParentSuperClass(cb)  
+
+
+b)  public static void processParentSuperClass(List<? super Parent> elements){ // parent yaa super of parent
+
+    elements.add(new Parent()) // type safe adding
+    elements.add(new ChildA())
+    elements.add(new ChildB())
+
+
+    Object object = elements.get(0); // no way of knowing what type they are
+    because subclasses are also stored
+
+    Parent parent = elements.get(0) // not clear hence error, list could be of List<Object>
+
+     
+    puts restriction on reading
+    
+
+} 
+
+
+  processParentSuperClass(p)
+  processParentSuperClass(ca) // error, these are subclasses of parent
+  processParentSuperClass(cb) // error

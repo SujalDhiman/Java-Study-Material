@@ -1,0 +1,6 @@
+
+In script file i could see something like: 
+
+- db2 "delcare cursor for"
+- MINUS syntax
+- db2 commit

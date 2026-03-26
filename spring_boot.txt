@@ -1,525 +1,273 @@
-*** Spring Boot ***
+** Work on Spring JDBC **
 
-- in application.properties debug=true, spring boot will tell you what classes it has activated and what not.
-- you get conditions evaluation report.
-- Positive matches: these classes will be autoconfigured by the spring based on CONDITION.
-- conditions can be: @ConditionalOnClass, @ConditionalOnProperty, @ConditionalOnMissingBean.
-- Negative matches: these classes will not be autoconfigured by the spring boot.
-- spring boot keeps a clone copy of meta data inside external libraries, spring-boot-autoconfigure/META-INF/spring/.
-- spring boot configures classes based on conditions.
-- SpringApplication.run returns ConfigurableApplicationContext which is an extension of Application Context, you can use
-  any but ApplicationContext is readonly hence you can modify beans.
+For JDBC
 
+- can't play with object
+- table auto creation is not supported
+- 
 
-*** How spring boot works internally ***
+*** Spring Data JPA *** (EntityManagerFactory)
 
-- @SpringBootApplication - main/primary annotation, and is a combination of
-
-- @Configuration---> for java based config approach for creating beans.
-- @AutoConfiguration ---> scans pom.xml and create beans based on conditions.
-- @ComponentScan ---> what all packages are needed to be scanned.
-
-- you can override @ComponentScan annotation, just below @SpringBootApplication, you can use @ComponentScan annotation
-  to override it and tell spring boot which all packages it needs to scan.
+- For a new project: dependencies: Lombok, Spring web, spring data jpa,
+  mysql driver
   
-  @ComponentScan(basePackages="com.javatechie.a.*");
+- Package Structures: Entity, Repository/DAO, Service, Controller 
 
 
-*** How spring boot works ***
+- Inside Entity Product: Create a Product Class (id,name,price,description,productType)
 
-1) creates application context (SpringApplication.run method)
-2) checks application type (inside create application context method) (web or reactive based on this it creates AC)
-3) scans and add beans to application context
-4) enable embedded tomcat containers.
+- Mark the above class with Annotations: @Data, @AllArgsConstructor, @Entity,
+  @Table(name=""), Entity is skeleton of table
 
+- To mark field as primary key: @Id, @GeneratedValue(strategy=)
 
-*** Spring Boot Conditions Annotations ***
-
-1) 
+- To name a column: @Column(name="")
 
 
-*** Dependency Injection and Command Line Runner ***
 
-- Stereotype annotations: @Component --> parent annotation of all listed, @Service, @Repository, @Controller
-- They define roles/purpose on classes they are used.
-- @Component tells spring to take care of it and add to AC
-- java based approach first annotate that class with @Configure and inside it use @Bean and create method that will return
-  object
-- use of @Autowired
+- Now create a ProductRepository interface extends JpaRepository
 
-- over setters 
+- CrudRepository is the parent interface of Spring Data? What is Spring Data?
+
+- We have different repo for different implementations
+
+- Properties to be set: Info about 
+
+  Datasource: driver classname, url, username, pass
+  hdm2.ddl.auto --> CREATE/UPDATE/NONE
+  show.sql: true
+  dialect: converts method to query: Mysql5Dialect
+
+- spring.datasource.driver-class-name=
+- spring.datasource.url=
+- spring.datasource.username=
+- spring.datasource.password=
+
+
+- spring.jpa.hiberntate.ddl-auto
+- spirng.jpa.properties.hibernate.dialect
+- spring.jpa.show-sql=true
+
+
+Q) Now suppose on application startup we want to add couple of objects to db
+
+
+- approach 1 make use of void init() @PostConstruct
+
+- Jpa tells give a .sql file and i will run it at the time of application startup
+
+- Spring boot looks for 2 file: data.sql and schema.sql
+
+- Inside data.sql: insert into Product () values() and add this property spring.
+  sql.init.mode=always
+
+- if you are writing data.sql then spring boot will ask why you are not writng
+  schema.sql, so that time tell jpa i just want to add data, for this add property
+
+  spring.data.defer-datasource-initialization: true (tells jpa dont take schema.sql
+  file into consideration)
+
+
+
+- CRUD Operation: 
 
   @Autowired
-  @Qualifier("version1")
-  private WhatsappService whatsppService;
+  private ProductRepository repo;
 
-- over constructor
-  @Autowired
-  UserService(@Qualifier("version1") WhatsappService whatappService){
-      this.whatsappService=whatsappService;
-  } 
+- repo.save()
 
+- there are some methods which you can create on your own, just append after findBy
+  jpa is smart enough to understand it e.g findByName()-> it is not in crud or jpa repo, but jpa can 
+  understand it, in your interface repo wherever u have extended JpaRepo just define
+  this method:
+  Product findByName(String name) --> jpa will take care
 
-*** Preprocessing logic that you want to perform before application kicking off use CommandLineRunner ***
+- return repo.findByProductType()  and inside interface List<Product> findByProductType(String productType)
 
-- implement CommandLineRunner and override run method
-- this method runs after psvm is executed and application context is initialized, after it immediately executes.
+- Now based on multiple fields
 
+- suppose want to get Product with Price and Type
 
-*** Spring boot restful webservices *** (coding wise working of REQUEST PARAMS is remaining)
+  return repo.findByPriceAndProductType(price,productType) and inside interface
 
-- There are 2 types of webservices
-
-a) SOAP --> sticks to SOAP protocol, works on XML.
-b) REST --> sticks to HTTP or HTTPs protocol, XML, JSON, any media type, secure and token based authentication.
+  List<Product> findByPriceAndProductType(double price, String productType)
 
 
--- 3 tier architecture:
+- Now when u have to write your own query (Custom Query)
+  
+  @Query("SELECT * FROM TABLE WHERE price=?1",nativeQuery=true) // native
+  List<Product> getProductByPrice(double price)
 
-- Web (endpoints) (Controller) 
-- Service (business logic) (Service)
-- Database (dao logic) (Repository)
+  
+  @Query("FROM TABLE p WHERE p.price=?1") // jpql (positional based passing)
+  List<Product> getProductByPrice(double price)
 
-
-
--- course-service
-
-1) add course
-2) update course
-3) delete course
-4) view/get course
+  
+  @Query("FROM TABLE p WHERE p.price=:price") // jpql
+  List<Product> getProductByPrice(@Param("price") double price)
 
 
-dependencies: lombok, spring web
-project structure: controller, service, dto, dao, entity(model) and util(converting dto to entity and vice versa)
+- UPDATE: Direct update is not allowed? Why this so? ask gpt
 
-dto-> it is the value that will be tansferred from controller to service, the dto will then be converted into model object
-to be saved inside db.
-
-
-- Course
-- courseId
-- name
-- trainerName
-- duration
-- startDate
-- courseType
-- fees
-- isCertificateAvailable
-
-- CourseService
-- CourseController - @RestController
-
--- HTTP METHODS --
-
-POST ---> creating resource and persisting in DB
-PUT ---> modifying the resource
-DELETE --> deleting the resource
-GET ---> fetch the resource
+1) get the product from DB by id
+2) update with new value getting from request
+3) and then save the exisitngProduct
 
 
--- @RequestMapping over the class
--- return type at controller, RequestEntity<?> addCourse(@RequestBody Course course) ---> @RequestBody converts JSON to
-Object
--- @PostMapping("enter url here"), @GetMapping("enter url here"), @GetMapping('/{courseId}') @PathVariable Integer courseId
-   @RequestParam, @JsonFormat 
-
--- return new ResponseEntity<>(course,HttpStatus.CREATED)
-
--- Lombok: @Data--> to generate both getters and setters
-           @AllArgsConstructor
-           @NoArgsConstructor
-           @Getter
-           @Setter
+   Product exisitngProduct = repo.findById(id);
+   existingProduct.setName()
 
 
-
-*** Spring Boot CRUD Example integration of in memory database H2 ***
-
-- H2 in memory data base mainly used for testing or test cases
-- couple of dependecies are required
-- Spring Data JPA, Spring Data is having multiple implemenatations consider it as 
-  an interface which is having implementations like JPA, MongoDB, Cassandra
-- spring data jpa and h2 is added, if you want to work with sql replace h2 with sql
-  driver, cassandra with cassandra driver
-
-- entity package is used to store objects into db
-
-entity/CourseEntity - Marked with @Entity telling jpa this object is 
-going to be stored in DB,@Table(name=""), @Entity must have primary key mark any
-of IV as @Id, @Generated(strategy = )
+   return repo.save(existingProduct)
 
 
-- inside dao create CourseDao Interface and extend CrudRepository<CourseEntity,
-Integer>(it is )
+- DELETE: 
 
-- now telling spring boot, to view h2 console, datasource to configure in application.properties
-
-  spring.h2.console.enabled=true
-  spring.datasource.url=jdbc:h2:mem:testdb(schema name)
+  repo.deleteById(id);
 
 
-- inside dto create CourseRequestDTO(captures incoming req) and CourseResponseDTO(response should be captured in this and return)
+** variations **
+
+Basic findBy
+
+ findByFirstName(String firstName)
+ findByEmail(String email)
+
+Logical Operators
+
+  findByFirstNameAndLastName(String first, String last) → AND condition
+  findByFirstNameOrLastName(String first, String last) → OR condition
+
+Comparisons
+
+  findByAgeGreaterThan(int age)
+  findByAgeLessThan(int age)
+  findByAgeBetween(int start, int end)
+  findByAgeGreaterThanEqual(int age)
+  findByAgeIsNull()
+  findByAgeIsNotNull()
+
+String Matching
+
+  findByFirstNameLike(String name) → SQL LIKE
+  findByFirstNameNotLike(String name)
+  findByFirstNameStartingWith(String prefix)
+  findByFirstNameEndingWith(String suffix)
+  findByFirstNameContaining(String keyword) → LIKE %keyword%
+  findByFirstNameIgnoreCase(String name)
 
 
-- inside service class, get the courseRequestDTO and convert it into CourseEntity(Important Point)
-  and save it into the db
 
-- use CourseDao method save to save the object in db
+*** Data JPA *** (Operator | Pagination | Sorting)
 
-- creating custom response
+- How to update an exisiting row in jpa? how data types are converted from java to sql types?
+  and what is _seq file for? all generation strategies? ALTER TABLE Author MODIFY COLUMN id INT AUTO_INCREMENT use of this AUTO INCREMENT with @Generated() how 
+  are they used in conjunction?
 
-  class ServiceResponse<T>{
-    private HttpStatus status;
-    private T response;
+- IN Operator in JPA
+
+  
+List<Product> searchProductByMutiplePriceValues(List<Double> price){
+
+  return repo.findByPriceIn(price);
+}
+
+now inside dao layer create this method
+
+List<Product> findByPriceIn(List<Double> price)
+
+
+- Between Operator
+
+
+List<Product> findByPriceBetween(double minPrice, double maxPrice)
+
+
+- LessThan/GreaterThan
+
+
+List<Product> findByPriceGreatherThan(double price)
+
+
+- Like Operator
+
+List<Product> findByFirstNameContaining(String name)
+
+
+- Sorting
+
+return repo.findAll(Sort.by(Sort.Direction.ASC,fieldName))
+
+
+- Pagination
+
+ public Page<Product> getProductWithPageResponse(int offset, int limit)
+ {
+   
+     return repo.findAll(PageRequest.of(offset,limit))
+ }
+
+- Pagination + Sort
+
+   return repo.findAll(PageRequest.of(offset,limit).withSort(Sort.by(fieldName)))
+
+
+
+*** Spring Data REST *** (Expose the endpoint, here just create entity class and then
+repository, no need to create service and controller class)
+
+-  dependencies: spring data jpa, mysql driver, spring boot started web, lombok, 
+   spring data rest
+
+
+- write the entity class
+
+- now create repository which has an interface and extends JPA repository
+
+- now just go to localhost:8080, you will get url for your corresponding entities
+
+- play with CRUD operations
+
+
+*** Spring Data JPA Auditing | Envers ***
+
+- To catch any data modifications, culprits.
+- who created/added this object, when this object created date, who modified/updated
+  this object last time, when this object modified last time
+
+- created_by, created_dt, modify_by, modify_dt columns in table
+
+- inside entity, private String createdBy, private Date createdDate, private String
+  lastModifiedBy, private Date lastModifiedDate
+
+
+- @CreatedBy, @CreatedDate @Temporal(Temporal.TIMESTAMP), @LastModifiedBy,
+  @LastModifiedDate
+
+- How to know createdBy and modifiedBy?
+
+- For above question, create a Class which implements AuditorAware and override
+  method getCurrentAuditor(), now you can autowire its object. To use this create
+  its bean
+
+  @Bean
+  public AuditorAware<String> auditorAware(){
+   
+   return new AuditorAwareImpl()
   }
 
+  and to use it use annotation @EnableJpaAuditing(auditorAwareRef="auditorAware")
+  just where @SpringBootApplication annotation is there.
 
 
-*** miscellaneous notes ***
+- To populate the change in dates, we need something to happen before req reaches db
 
-- JPA(java persistence api) is a specification that tell how java objects should be mapped to database tables. It does
-  not provide actual database functions, it requires an implementation, it just define rules and interfaces.
-
-- JPA needs an implementation and this implementation is provided by Hibernate, OpenJPA.
+for this, over entity class use annotation @EntityListeners(AuditingEntityListener.class)
 
 
-
-
-*** Things to need double down on ***
-
-- @JsonFormat annotation
-- JPA generation for primary keys
+- revision part pending where tables are autogenerated for keeping track of changed
+  records
 
 
 
-*** Bean Validation ***
-
-- validate the information coming from the user.
-- spring boot starter validation ---> dependency
-
-annotations used in this dependency
-
-- @NotNull
-- @NotEmpty
-- @NotBlank - @NotNull + @NotEmpty
-- @Min and @Max
-- @Pattern
-- @Email
-
-
-inside courseRequestDTO:
-
-@NotBlank(message="Course name should not be null and empty")
-@NotEmpty(message="")
-
-
-@Min(value=1500,message="Course price cannot be less than 1500")
-@Max(value=5000,message="Course price cannot be above 5000")
-private Double fees;
-
-
-@Pattern(regexp="^[0-9]{10}")
-
-
-in order to trigger it
-
-- inside controller where in @RequestBody you are accepting it just append @Valid before courseRequestDTO
-
-*** Exception Handling ***
-
-- @RestControllerAdvice annotated over a class indicates that this is a global exception handler class
-  class ApplicationExceptionHandler
   
-
-- @ExceptionHandler(MethodArgumentNotValidException.class) if you find error of this type just call below method
-  public ServiceResponse<?> handleMethodError(MethodArgumentException exception){
-   
-   ServiceResponse<?> sr=new ServiceResponse<>();
-   List<ErrorDTO> errorDTOList=new ArrayList<>();
-   exception.getBindingResult().getFieldErrors().forEach(error->{ErrorDTO err= new ErrorDTO(error.getMessage);
-	errorDTOList.add(errorDTO));
-
-   return sr;
-}
-
-
-
-
-- create an error DTO: List<ErrorDTO> error;
-
-
-
-*** LOGGING ***
-
-- logback contains : logback core and logback classic
-- logback(its the implementation class)
-- spring jcl(pulls above dependency) (spring commons logging)
-- java util logging, log4j2, logback(default provided)
-- spring boot started logging (dependency)
-- spring-boot-started-web (pulls above dependency)
-
-
-Logger - captures the event message.
-Formatter - Formats the message captured by logger.
-Handler - Dispatch the message by printing them in a file or console.
-
--> creating logger object 
-   Logger log=LoggerFactory.getLogger(mention the class)
-
--> Logging Level
-
-    - INFO (events occuring at runtime) (for prod and env)
-    - DEBUG (info abt flow of system) (for developer)
-    - WARN (changes due to deprecation)
-    - ERROR (runtime error)
-
-  ALL<TRACE<DEBUG<INFO<WARN<ERROR<FATAL<OFF ---> order of logging
-
-
-- To enable levels:
-
-a) logging.level.packageName.*=
-b) spring.output.ansi.enabled=true
-c) logging.file.name=file.log
-
-
-
-
-*** Spring Boot Actuator *** (helps in monitoring
-application in the production)
-
-- spring boot actuator exposes some endpoints which
-give lot of information abt ur system
-
-- dependency: Spring Boot Actuator
-
-- after running it exposes a new endpoint: localhost:port/actuator
-
-- to enable all endpoints in application.properties write:
- management.endpoints.web.exposure.include=*
-
-- some questions:
-
-- use of @Sl4j annotation (study about logs) ------ done
-- use of ObjectMapper --> converts java objects to JSON ---- done
-
-
-- info endpoint of actuator, explore logfile endpoint
-
-question on this
-
-- check how to enable info endpoint through application.properties---> done
-- how to set info properties like in application.properties ---> done, properties to first expose info and then to show
-  all env related data management.info.env.enabled=true
-- how to set info properties using .yml file ---> done
-
-- to add dynmaic data to info route ---> use InfoContributor interface
-- creating a custom endpoint and using inside actuator ---> pending
-
-
-
-** Question **
-
-- how to access properties listed inside application.properties
-
-a) @Value annotation: e.g @Value("${app.name}")
-
-b) Using Environment class, just autowire it and use e.g env.getProperty("info.app.name")
-
-
-
-*** behind the scene working of email ***
-
-- SMTP only stands ASCII text not binary, but pdfs, attachments are all binaries
-- Base64 is an encoding algorithm that takes in binary values and converts them to ASCII
-
-
-
-*** Spring Boot Email Integration ***
-
-- Java Mail Sender dependency to be added
-
-
-- in application.properties or application.yml
-
-a) spring.mail.host= smtp.gmail.com
-   spring.mail.port=587
-   spring.mail.username=sujaldhiman2003@gmail.com
-   spring.mail.password=
-   spring.mail.properties.mail.smtp.auth
-
-
-
-b) Autowire JavaMailSender
-
-c) now create object of SimpleMailMessage and set all properties
-   of it
-
-d) SimpleMailMessage smp=new SimpleMailMessage()
-   smp.setFrom();
-   smp.setTo();
-   
-e) javaMailSender.send(smp);
-
-f) MimeMessage mimeMsg = new MimeMessage() -> used when attachements
-   are also there
-
-
-
-*** heirarchy drill down ***
-
-- SimpleMailMessage
-
-
-
-Properties to be set:
-
-- host, username, password, port and security properties
-
-Classes and Interfaces Involved:
-
-- MailSender
-
-- JavaMailSender
-
-- JavaMailSenderImpl
-
-- SimpleMailMessage
-
-- MimeMessagePreparator
-
-- MimeMessageHelper
-
-
-
-**** New topic regarding Streams ****
-
-- InputStream--> use to read from a source, reads byte by byte, good for reading pdfs,images
- 
-- OutputStream--> writing to a source
-
-both above inputstream and output stream deals in raw bytes, above just move bytes here and there
-
--- for byte streams classes responsible are InputStream and OutputStream
--- for character streams classes responsible are Reader and Writer
-
-
-Java I/O is basically divided into 2 categories:
-
-- Byte Streams  - Binary Data --> main interfaces InputStream and OutputStream  --> FileInputStream, FileOutputStream
-
-- Character Streams  - Text Data --> main interface Reader and Writer --> FileReader and FileWriter
-
-
-*** Proper Distinctions ***
-
-- FileInputStream --> reads byte wise from source, and you get a byte source
-
-- InputStreamReader --> coverts byte stream to character stream
-
-- FileReader --> reads character wise and you get a character stream
-
-- BufferedReader --> works on character stream
-
--  
-
-
--- topics to cover
-
-a) All Input and Output Streams
-b) Sending basic mails
-c) Handling Files at backend
-d) How are files actually transferred, meaning conversion to byte stream over network 
-   and how in backend database to save
-   
-
-
-
--- distinguish between: MimeMessage and MimeMessageHelper
--- Multipart
-
-
-
-*** some key question during file handling at backend ****
-
-How does a file from your local machine travel over the network to a backend server?
-
-What happens behind the scenes in HTTP during a file upload?
-
-How is the file referenced from the local machine and included in a request (like Postman or a web app)?
-
-How does the server (like Spring Boot) receive and reconstruct the file?
-
-What protocols, headers, encodings, and technologies are involved?
-
-
--- things done learnt how to handle file, more stuffs to work upon, distinguish between still pending
-
-
-
-
-*** Spring Scheduler ***
-
-- scheduler 
-
-a) why to use it
-b) what are the real life usecases
-
-- some piece of code to automate using time intervals
-
-create a new project
-
--> dependencies: lombok, spring web, h2, spring data jpa, 
-java mail sender, apache poi--> to generate excel file
-
--> generating excel file steps
-
-
---> in excel first row is header, and divided into row and column
-
-1) each segment is a cell
-
-
-SXSSWorkbook workbook = new SXSSWorkbook();
-Sheet sheet = workbook.createSheet();
-
---> first set the header
- 
-Row headerRow = sheet.createRow(0);
-Cell headerCell = headerRow.createCell(0);
-headerCell.setCellValue("ORDER_ID");
-
-headerCell = headerRow.createCell(1)
-headerCell.setCellValue("ORDER_NAME")
-
-
---> creating byte array to a resource
-
-
-- create a folder as service
-- inside that inject the service bean which u want to run
-- e.g @Autowired NotificationService service;
-- to enable scheduling: @EnableScheduling (should be kept
-above the service class responsible for handling scheduling)
-
-@Scheduled(fixedRate = 3000)
-public void process(){
-}
-
-@Scheduled annotation should be written above the method
-responsible for calling a particular service
-
-@Scheduled(cron="")
-
-- read about cron expression
-
-** what if method took too long to execute and job is triggered?
-
-
-
-
-
-
-
-

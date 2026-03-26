@@ -1,0 +1,41 @@
+
+**** Topics ****
+
+
+- TCP and OSI Model (Mainly each layer overview and functioning)
+
+- What are protocols? HTTP v/s HTTPS?
+
+- What is a network? (Understand thoroughly)
+
+- What are IP addresses and MAC addresses? (v.v.imp)
+
+- What are IP addresses used? e.g in public network but why?
+
+- What are MAC addresses used? e.g in private network but why?
+
+- Understand significance of both IP and MAC addresses
+
+- What is DNS?
+
+- What happens when you type something on internet and search?
+
+- What is a URL? what do you understand by www.google.com?
+
+- What are sockets in networking?
+
+- Difference between a socket connection and TCP connection?
+
+- Why server disconnects connection in a TCP connection?
+
+- What is DHCP?
+
+- What is three way handshake and what is ARP resolution protocol?
+
+- How router identifies devices IPs and MAC on a network? (Significance of ARP will come into play)
+
+- Difference between private and public IPs?
+
+- What is the use of router?
+
+- Subnet and Subnetting?

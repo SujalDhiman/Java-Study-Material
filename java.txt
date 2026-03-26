@@ -148,7 +148,7 @@ b) Comparator View: Arrays.sort(arr,new <>()) the instance has to be passed of w
 
 
 
-*** GOOD QUESTION *** (why interfaces can't be converterd to abstract classes and then used?)
+*** GOOD QUESTION *** (why interfaces can't be converterd to abstract classes and then used?) --> multiple inheritance not allowed
 
 
 *** TRICKY QUESTION *** (What will happen if your child class extends a class that has same method signature in parent
@@ -342,11 +342,182 @@ exception you should provide exception handlers
 
 
 
+*** Multithreading in JAVA ***
+
+- Java concurrency and multithreading
+
+- single cpu single process
+- single cpu multiple process
+- single cpu multiple process but each process with multiple threads
+- multiple cpu multiple process 
+
+
+- Multithreading happens within an application
+- threads are executed in the same way, processes are executed
+
+
+- Why multithreading?
+- better cpu utilization
+- better io utilization
+- higher application responsiveness
+
+
+- process - a big container with resources
+- thread - actual worker, responsible for actual execution,
+  cpu's agent that walks through the instruction and executes
+  them.
+
+
+
+- Java Threads - Creating, Starting and Stopping Threads in Java
+
+- create a thread
+
+a) extend Thread class
+   
+   class A extends Thread{
+   public void run(){}}
+
+   A obj=new A()
+   obj.start();
+
+
+b) implements Runnable interface
+
+   class A implements Runnable{
+   @Override
+   public void run(){}}
+
+
+   Thread t1=new Thread(new A())
+   t1.start();
+
+
+c) using Runnable as an Anonymous Class
+
+d) using Runnable as a Lambda Expression
+
+   Runnable run = ()->{}
+
+   Thread t1=new Thread(run);
+            or
+   Thread t1=new Thread(run,"name of the thread")
+   t1.start();
+
+
+- obtain a reference to thread running a runnable using -
+  Thread.currentThread().getName()
+
+
+- no guarantees how thread will be executed by the cpu
+
+
+** sleeping a thread **
+
+ Runnable r1=()->{
+  
+  String threadName= Thread.currentThread().getName();
+  System.out.println(threadName+" running");
+
+  try{
+   
+	Thread.sleep(2000);
+  }
+
+  System.out.println(threadName+ " finished");
+  }
+
+
+  Thread t1=new Thread(r1)
+  t1.start();
+
+
+- even if a thread is executing a piece of code, but the main
+  method thread dies, the thread executing piece of code will
+  still run until its execution finishes, meaning it is independent
+  of main thread.
+
+
+- daemon thread, all daemon threads will be terminated as soon as main
+  thread finishes its execution
+
+- thread.setDaemon(true)
+
+- thread.join(), main thread will be blocked, until the execution of thread
+  on which join method is called is completed
+
+- thread.join() what it does that the thread on which it is called, it blocks the thread which executes that function in which .join() is called
+
+
+  psvm(){
+  Runnable r1=()->{
+   for(int i=0;i<=5;i++){
+      sleep(1000)
+      System.out.println(i);
+   }
+ }
+  
+  Thread t1=new Thread(r1);
+  t1.setDaemon(true)
+  t1.start()
+	
+
+  try{
+  t1.join() // main thread will be blocked until it completes its execution
+  }
+  sopln("Ending Thread"); 
+}
+
+
+- Threads in java are mananged by OS, OS level threads - more heavy(1-2MB of stack space)
+
+- Project LOOM - JVM will manage thread
+
+- Java memory model, thread stack, heap, l1 caches, cpu registers, problems due to sharing of resource, cache coherence, virtual, platform and os thread
+
+
+- how is thread created behind the sceme?
+- It runs on a small pool of actual OS threads called carrier threads ?
+
+
+*** topics learned today ***
+
+- java happens before guarantee
+- why not to declare all fields as voaltile
+
+ 
+      
+- volatile keyword guarantees visibility
+
+1. Visibility Guarantee
+- When a thread writes to a volatile variable, that value is immediately visible to all other threads.
+- It flushes the value to main memory.
+- Any thread reading the variable will fetch from main memory, not cache.
+
+
+Use it only when:
+
+You are not doing compound operations (e.g., no count++).
+
+You just want to signal or share flags or single-read/single-write values across threads.
+
+- cpu does reordering for optimizations which can break visibility.
+
+
+
+
+** Synchronized Keyword **
+
+- what is monitor object?
+- java syncronized visibility guarantee?
+- inside sync block will every variable will be read and write from mm?
+- a variable outside a sync block but if it is encountered by a thread, will it be written to the mm?
+
+
+
 
 
 
 
 
  
-      
-

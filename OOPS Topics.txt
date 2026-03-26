@@ -1,0 +1,54 @@
+
+**** TOPICS ****
+
+- What is OOPS? All 4 pillars meaning with coding examples? For e.g. If 
+  explaining encapsulation then explain significance of getter and setter methods
+
+- What is Object Class?
+
+- Whenever you print an object instance which method gets called by default?
+
+- Understand the significance of toString, equals and hashcode method.
+
+- Access Priviledges across same and different package: public, private and protected
+
+- Static methods/variables and Static Blocks. Why public static void main which is
+  the entry point to code is static?
+
+- Order of execution of initialization block and constructors
+
+- Method Overloading
+
+- When Garbage collection works object's which method is called internally?
+
+- Inheritance
+
+  a) Defining SubClasses
+  b) Overriding Methods
+  c) Calling of Constructors when subclass object is created e.g child one
+     will be called or parent?
+  d) Constructor Calling Heirarchies
+
+- Polmorphism
+
+  a) What is it? Give a real life example
+  b) What is dynamic method dispatch?
+  c) Why parent can refer to object of subclasses but not vice versa
+  d) Casting
+  e) Abstract Classes
+
+
+- this vs super keyword
+
+- Interfaces: just go with concept, why it was required
+
+- Just study what are default methods in interfaces.
+
+- Why interfaces can't be converted to abstract classes and then used.
+
+- What will happen if your child class extends a class that has same method signature in parent
+and same method signature is listed in the interface as a default method, which implementation will child class will take?
+
+- What will happen if a class implements 2 interface having same default method signatures, how will you resolve the 
+    confusion.
+

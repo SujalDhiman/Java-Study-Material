@@ -1,0 +1,30 @@
+
+*** Shell Scripting ***
+
+
+- there are different types of shell: bash, sh, ksh, tsh, fish, zsh
+
+- to check which shell are you using: echo $0
+
+- #!/bin/bash
+
+  
+- to print
+  
+  echo "Hello World"
+
+
+- #!/bin/bash -> shebang line
+
+- echo "Hello World" -> to print something on terminal
+
+- make sure script has read write execute position
+
+- to execute the script: bash ./01_script.sh
+
+- or give permission to execute the file and write the file name directly
+
+
+till: 11(script)
+11-12(JPA)
+12-1(SQL)

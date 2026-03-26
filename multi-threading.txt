@@ -1,0 +1,190 @@
+JAVA MULTITHREADING
+
+
+- It makes application fast and responsive -- but not always true
+
+- Thread - smallest unit of execution inside a program
+
+- Main thread is what is spinned by your java and it calls the public static void main()
+
+- Thread.setDaemon(true)
+  By default, threads are "User Threads". The Java Virtual Machine (JVM) will keep your program running as long as at least one User Thread is alive.
+
+- A Daemon Thread is a background helper thread (like Java's Garbage Collector). If all the User Threads (like your Main Thread) finish their work and die, 
+  the JVM will abruptly terminate all running Daemon threads and shut down the program.
+
+- Thread.join()
+  This method is used for synchronization. It tells one thread to wait for another thread to completely finish its run() method before moving on.
+
+  Imagine the Main Thread needs the result of a database query before it can print a report.
+
+
+- Cache Coherence is the set of hardware strategies your computer uses to try and keep all those personal mini-fridges in sync. The hardware tries its best to say,
+  "Hey, Chef A changed this, everyone update your fridges!" But because CPUs execute billions of instructions per second, relying purely on hardware cache coherence
+   isn't enough for complex software. Things get messy.
+
+- class Interruptor
+{
+    volatile boolean allow_to_run=true;
+
+    public void startThread(){
+
+        Thread t1= new Thread(()->{
+
+            int i=0;
+            while(allow_to_run){
+                i++;
+                System.out.println("Thread Ending with value "+i);
+            }
+            System.out.println("Thread Ended");
+        });
+        t1.start();
+    }
+
+    public void stopThread(){
+        this.allow_to_run=false;
+    }
+}
+
+
+public class MultiThreading {
+    public static void main(String[] args) throws InterruptedException {
+
+        Interruptor in = new Interruptor();
+
+        in.startThread();
+        Thread.sleep(500);
+        in.stopThread();
+    }
+}
+
+
+- The Visibility Guarantee means that any write to a volatile variable is immediately flushed directly to Main Memory. 
+  Furthermore, any read of a volatile variable bypasses the local thread cache and reads directly from Main Memory. It guarantees that if Thread A changes a variable,
+  Thread B is guaranteed to see that change immediately.
+
+
+- Volatile guarantees read from the main memory, but what will happen if 2 threads tries to access a same variable at the exact millisecond.
+
+- Synchronized Keyword comes into action
+
+- Every object is born with a inherent lock, using synchronized keyword you are telling a thread to acquire the lock first
+
+- Synchronization on method is different from synchronization on a particular part of code
+
+- Every object has exactly ONE lock.(imp line)
+
+- when you put synchronized keyword on an instance method, you are saying that the thread must acquire single lock on the entire object nothing more nothing less
+
+- future question: Now that you understand instance-level locks, the natural next question is: What happens if you make those synchronized methods static?
+  Would you like me to explain how Class-level locks work, or would you prefer to dive into how threads can actively talk to each other using wait() and notify()?
+
+- public class BankAccount {
+    
+    // INSTANCE Method (Locks the specific object instance)
+    public synchronized void withdrawMoney() {
+        System.out.println("Withdrawing money...");
+        try { Thread.sleep(5000); } catch (Exception e) {} // Simulate long work
+    }
+
+    // STATIC Method (Locks the master BankAccount.class)
+    public static synchronized void updateInterestRate() {
+        System.out.println("Updating global interest rate...");
+        try { Thread.sleep(5000); } catch (Exception e) {} // Simulate long work
+    }
+}
+
+- Thread T1 is currently executing the static method updateInterestRate().
+  At the exact same time, Thread T2 tries to execute the instance method withdrawMoney() on a specific BankAccount object.
+  Does T2 have to wait for T1?
+
+  The Answer: NO. They run perfectly in parallel.
+
+  Why? Because they are grabbing two completely separate locks.
+
+  Thread T1 has the key to the Master Class Safe (BankAccount.class).
+
+  Thread T2 has the key to the Individual Object Safe (this).
+
+  The locks are entirely independent of each other.
+
+- what is java synchronized visibility guarantee?
+
+  when you use the synchronized keyword, JMM enforces 2 massive operations:
+
+  1) Cache Invalidation - l1, l2 cache are invalidated (forced to clear out) everything is between cpu and ram no intermediate things
+  
+  2) Cache Flush - All changes are flushed to main memory
+
+
+- What is Happens before guarantee?? what is instruction reordering??
+
+
+  Our CPU and java compiler is obsessed with making process fast. If the compiler or the CPU looks at your code and realizes that changing the order of the
+  instructions will make it run faster without changing the final result, it will rearrange your code.
+
+  public class ReorderingProblem {
+    int data = 0;
+    boolean isReady = false;
+
+    // Thread 1 executes this
+    public void prepareData() {
+        data = 42;          // Line A
+        isReady = true;     // Line B
+    }
+
+    // Thread 2 executes this
+    public void processData() {
+        if (isReady) {             // Line C
+            System.out.println(data); // Line D
+        }
+    }
+}
+
+
+  problem occurs here:
+
+  Look closely at Thread 1. To the CPU, data = 42 and isReady = true have absolutely nothing to do with each other. They don't depend on each other.
+  So, to optimize performance, the CPU might execute Line B before Line A.
+
+  If Thread 2 happens to run exactly at that split second, it sees isReady is true, enters the if statement, and prints data... which is still 0!
+
+  This is an impossible-to-reproduce bug caused entirely by hardware optimization.
+
+
+- Here is exactly how synchronized stops the chaos:
+
+  
+1) It stops Reordering: The compiler is not allowed to take data = 42 and move it outside of the synchronized block. The walls of the synchronized block are
+   impenetrable. Whatever happens inside, stays inside, and executes in a safe, isolated bubble.
+
+
+
+Question) Can overriden methods like run cannot throws InterruptedException
+
+Java has a strict inheritance rule: An overriding method cannot throw any new or broader checked exceptions than the overridden method.
+Because the original run() method doesn't throw anything, your run() method isn't allowed to either.
+
++ 
+
+
+Why didn't the Java architects just add throws Exception to the Runnable interface?
+
+Think about how standard methods work. If Method A calls Method B, and Method B throws an error, Method B passes that error back down the call stack to Method A
+ to handle.
+
+But threads don't share a call stack. Threads are entirely independent timelines.
+
+Your main thread calls t1.start().
+
+The OS creates a brand new thread (t1) with its own isolated stack.
+
+The main thread instantly moves on to the next line of code. It does not wait around.
+
+Three seconds later, t1 is executing run() and encounters an InterruptedException.
+
+If Java allowed t1 to "throw" that exception out of the run() method... who is there to catch it? The main thread is already gone. There is no "parent" waiting to
+catch the thrown exception.
+
+
+

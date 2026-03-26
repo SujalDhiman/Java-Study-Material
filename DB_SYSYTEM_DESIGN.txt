@@ -1,0 +1,96 @@
+SOME QUESTIONS: 
+
+Q) Your database has a users table with 50M rows. You add a new column is_verified BOOLEAN DEFAULT FALSE. The migration takes 6 hours and locks the table.
+   How do you add this column without downtime
+
+A) There is a difference in these two things: ALTER TABLE ADD COLUMN is_verified BOOLEAN and ALTER TABLE ADD COLUMN is_verified BOOLEAN FALSE
+
+   In database terms, adding a column with a DEFAULT value historically forced the database to rewrite the entire table to physically insert that default
+   value into every single row. During this time, it places an exclusive lock on the table, meaning your app crashes or times out whenever it tries to read or write
+   user data.
+
+   
+   Modern databases have resolved this by just updating this meta data...
+
+   Steps to resolve:
+
+1) Don't add any value keep it just NULL
+2) When you set any default value, what will happen is that your database literally try to add this value to every row and it becomes a disk related operation which
+   is time consuming.
+
+3) This happens when you don't give a default value
+
+   
+   a) Your app asks: "Give me all the info for User #1."
+   b) The database pulls User #1's piece of paper.
+   c) It looks at the metadata rulebook and sees, "Ah, I'm supposed to return an is_verified value too."
+   d) It looks back at User #1's paper and sees nothing there about being verified.
+   e) Instead of crashing, the database simply says: "I don't see anything written here, so I will just return NULL (empty) to the app."
+
+
+
+Q) What is this reorg and why does it take time? Explain simply..
+
+A) After the ALTER, your database is in a slightly awkward state. The "blueprint" says there should be a new column, but the physical data on the hard drive is
+   still stored in the old format.Every time your app asks for a row, the database has to read the old physical data, look at the new blueprint, and stitch them
+   together on the fly before sending it to your app. Over the time what happens your data gets messy and is called fragmented
+
+
+   During the Reorg command run:
+
+1) The database creates a massive, hidden, empty table on your server's hard drive. (It grabs a brand new, blank book).
+2) It reads row #1 from the old table, adds "FALSE" to the end of it, and writes it into the new table.
+3) Once the new book is fully written and mapped, the database takes a fraction of a second to delete the old book.
+
+
+
+- First Principles of Storage: (words: grinding halt, In system design there are no perfect solutions, there are just trade offs)
+
+
+- Hashmap (failing when range query concept was added and running out of RAM) over B-Tree
+
+
+JAVA CODE (small database with hashmap and file input and ouput operation)
+
+JAVA (Generics)
+DBMS(query check)
+
+
+RAM Architecture: 
+
+Hard Disk Architecture:  are bulky and slow, they give you a block (4KB or 8KB)-> called as pages or blocks, read few pages as possible
+
+
+implement this B Tree in java and learn in more detail and this complete working of hard disk and RAM
+
+
+
+
+
+Follow up questions: 
+
+- BufferedWriter and FileWriter
+
+- RandomAccessFile (full control over physical read/write over hard disk)
+
+
+
+
+why T space T is 3 bytes and T space T space space is also 3 bytes --> How's byte being calculated
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
