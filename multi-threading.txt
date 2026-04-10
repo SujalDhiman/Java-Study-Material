@@ -188,3 +188,478 @@ catch the thrown exception.
 
 
 
+** Thread Pools **
+
+- // difference between run and start method
+
+- run() method is executed by the main thread only, it is a regular method call.
+
+- where start() asks OS to create a new thread and then run it
+
+public class ThreadTest {
+    public static void main(String[] args) {
+        Thread thread = new Thread(() -> {
+            System.out.println("Running in: " + Thread.currentThread().getName());
+        });
+
+        System.out.println("--- Using run() ---");
+        thread.run(); // This will say "main"
+
+        System.out.println("--- Using start() ---");
+        thread.start(); // This will say "Thread-0"
+    }
+}
+
+
+- the difference between run and start method boils down to the concept of stack (container) and stack frame (container content)
+- in java if you have main thread and 3 other threads you have basically 4 stacks
+- each stack is private
+- A Stack Frame is a data structure that gets created every single time you call a method. It lives inside the Stack.
+- when you call run() - the stack frame is added to main thread stack due to which main thread gets blocked
+- but when you call start() - a new thread is created and a new stack is created and the stack frame is pushed into that thread stack not on main thread stack
+
+
+
+Thread Pool Code:
+
+package com.springboot.tutorial;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+
+class Worker implements Runnable
+{
+    private BlockingQueue<Runnable> queue;
+    private Thread currentThread;
+    private volatile boolean isStopped = false;
+    private int threadId;
+
+    Worker(BlockingQueue<Runnable> queue, int id){
+        this.queue=queue;
+        this.threadId = id;
+    }
+
+    @Override
+    public void run(){
+        currentThread = Thread.currentThread();
+        Thread.currentThread().setName("Thread Name "+threadId);
+        System.out.println("Thread "+threadId+" started");
+        while(!isStopped){
+            Runnable task = null;
+            try {
+                task = this.queue.take();
+                task.run();
+            } catch (InterruptedException e) {
+                System.out.println("Thread "+threadId+" ended");
+                break;
+            }
+        }
+    }
+    public void stopWorker(){
+        this.isStopped=true;
+        this.currentThread.interrupt();
+    }
+}
+
+class ThreadPoolManager{
+
+    private BlockingQueue<Runnable> queue;
+    private List<Worker> workers = new ArrayList<>();
+    private boolean stop = false;
+
+    ThreadPoolManager(int threads){
+
+        this.queue = new LinkedBlockingQueue<>();
+
+        for(int i=0;i<3;i++){
+            Worker worker = new Worker(queue,i+1);
+            workers.add(worker);
+
+            Thread t1 = new Thread(worker);
+            t1.start();
+        }
+    }
+
+    public synchronized void startProcess(Runnable task){
+        if(!stop) this.queue.offer(task); // difference between add and offer
+    }
+
+    public synchronized void stopWorker(){
+        if(!stop){
+            for(Worker worker: workers){
+                worker.stopWorker();
+            }
+        }
+    }
+}
+
+public class ThreadPoolCustom {
+    public static void main(String[] args){
+
+        ThreadPoolManager manager = new ThreadPoolManager(3);
+
+
+        Thread t1 = new Thread(()->{
+            for(int i=0;i<=100;i++){
+                int finalI = i;
+                manager.startProcess(()->{
+                    System.out.println("Task Number "+ finalI + " completed by "+ Thread.currentThread().getName());
+                });
+            }
+        });
+
+        t1.start();
+    }
+
+}
+
+
+
+** JAVA LOCKS **
+
+- Reentrance means that if a thread already holds a lock, it is allowed to "re-enter" any other block of code protected by that exact same lock instance
+  without getting stuck.
+
+- class LockSimulation implements Runnable{
+
+    public static int count=0;
+    private final Lock lock = new ReentrantLock(true);
+
+    public void kuchKaam(){
+        lock.lock(); // this lock instace here is acquired by thread A that has called run, hence it is allowed to lock again
+        try {
+            System.out.println("Main hoon inside kuch kaam "+Thread.currentThread().getName());
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        finally {
+            lock.unlock();
+        }
+    }
+    @Override
+    public void run() {
+        lock.lock(); // thread A has acquired lock on this instance
+        System.out.println("Maine lagaya lock " + Thread.currentThread().getName());
+        count++;
+        try {
+            Thread.sleep(2000);
+            kuchKaam();
+        } catch (InterruptedException ex) {
+            System.out.println("Error occured");
+        } finally {
+            lock.unlock();
+        }
+    }
+}
+
+- The standard lock.lock() and the synchronized keyword are uninterruptible. If a thread is waiting for a synchronized block, you cannot stop it.
+  Even if you call thread.interrupt(), the thread stays stuck in the "Blocked" state until it gets the lock.
+ 
+- tryLock() is the most popular tool for avoiding Deadlocks. It asks the question: "Is the lock available right now?"
+
+- public void performTask() {
+    if (lock.tryLock()) { // "Hey, can I have the key?"
+        try {
+            // Critical Section: I have the lock!
+            System.out.println("Lock acquired, doing work...");
+        } finally {
+            lock.unlock();
+        }
+    } else {
+        // Plan B: I didn't get the lock.
+        System.out.println("Lock busy. I'll try again later or do something else.");
+    }
+}
+
+- tryLock() - This person walks up to the door, tries the handle, finds it's locked, and says: "Forget it, I have work to do."
+
+  They do not wait.
+
+  They immediately go back to their desk.
+
+  This is used when you have a "Plan B."
+
+- lock.lockInterruptibly() (The Responsive Employee)
+
+  This person stands outside the door to wait, but they keep their phone in their hand.
+
+  They are willing to wait, BUT if their boss calls and says "Come to my office now!" (Interruption), they leave the line immediately.
+
+  Unlike the stubborn colleague, they are responsive to the outside world while waiting.
+
+- In your ThreadPoolManager, when you call stopPool(), you want your workers to die. If a worker is stuck waiting for a lock.lock(), it will ignore your 
+  shutdown command. It will stay alive until it gets that lock.
+
+- When you call targetThread.interrupt(), two things happen depending on what the target is doing:
+
+1) Case A: The Thread is "Waiting" (Sleep, Wait, Join, Take)
+
+   If the thread is currently inside a method like Thread.sleep(), Object.wait(), or BlockingQueue.take(), the JVM does the following:
+
+   It clears the "interrupted status" flag.
+
+   It throws an InterruptedException inside the target thread's stack.
+
+   This "shove" forces the thread to exit the waiting method and jump straight into the catch block.
+
+
+
+** Executor Service - A high level API for managing threads, their cancellation and working. Pro Version of ThreadPool
+
+
+
+- Deadlock Code
+
+
+
+package com.springboot.tutorial.deadlock;
+
+
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+class Runnable1 implements Runnable
+{
+
+    private Lock l1 = null;
+    private Lock l2 = null;
+
+    Runnable1(Lock l1, Lock l2){
+        this.l1=l1;
+        this.l2=l2;
+    }
+
+    @Override
+    public void run(){
+        String threadName = Thread.currentThread().getName();
+        System.out.println(threadName+" going to apply lock l1");
+        l1.lock();
+        System.out.println("Lock l1 applied by "+threadName);
+
+        try{
+            Thread.sleep(3000);
+        }
+        catch(InterruptedException ex){
+            System.out.println(ex.getMessage());
+        }
+
+        System.out.println(threadName+" going to apply lock l2");
+        l2.lock();
+        System.out.println("Lock l2 applied by "+threadName);
+    }
+}
+
+class Runnable2 implements Runnable
+{
+
+    private Lock l1 = null;
+    private Lock l2 = null;
+
+    Runnable2(Lock l1, Lock l2){
+        this.l1=l1;
+        this.l2=l2;
+    }
+
+    @Override
+    public void run(){
+        String threadName = Thread.currentThread().getName();
+        System.out.println(threadName+" going to apply lock l2");
+        l2.lock();
+        System.out.println("Lock l2 applied by "+threadName);
+
+        try{
+            Thread.sleep(3000);
+        }
+        catch(InterruptedException ex){
+            System.out.println(ex.getMessage());
+        }
+
+        System.out.println(threadName+" going to apply lock l1");
+        l1.lock();
+        System.out.println("Lock l1 applied by "+threadName);
+    }
+}
+
+
+
+public class Deadlock {
+    public static void main(String[] args){
+        Lock l1=new ReentrantLock();
+        Lock l2 = new ReentrantLock();
+
+        Runnable1 r1 = new Runnable1(l1,l2);
+        Runnable2 r2 = new Runnable2(l1,l2);
+
+        Thread t1= new Thread(r1);
+        Thread t2= new Thread(r2);
+
+        t1.start();
+        t2.start();
+    }
+}
+
+
+- Deadlock Prevention Time Out Code
+
+
+package com.springboot.tutorial;
+
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+class Runnable1 implements Runnable
+{
+
+    private Lock l1;
+    private Lock l2;
+
+    Runnable1(Lock l1, Lock l2){
+        this.l1=l1;
+        this.l2=l2;
+    }
+
+    @Override
+    public void run(){
+
+        String ThreadName = Thread.currentThread().getName();
+
+        while(true){
+            int attemptCount = 0;
+            while(!tryToDoLocks()){
+                attemptCount+=1;
+                System.out.println(ThreadName+" unable to apply lock on l1 and l2");
+                try {
+                    Thread.sleep(7000);
+                }
+                catch(InterruptedException ex){
+                    System.out.println("Thread Sleeping");
+                }
+            }
+            if(attemptCount>0){
+                System.out.println(ThreadName+" occupied lock after "+attemptCount+" attempts");
+            }
+
+            l1.unlock();
+            l2.unlock();
+        }
+    }
+
+    public boolean tryToDoLocks() {
+
+        String threadName = Thread.currentThread().getName();
+        try{
+            boolean tryingToLock1 = l1.tryLock(1000, TimeUnit.MICROSECONDS);
+            if(!tryingToLock1){
+                System.out.println(threadName +" not able to lock l1");
+                return false;
+            }
+        }
+        catch(InterruptedException ex){
+            System.out.println("Unable to lock l1");
+        }
+
+        try{
+            boolean tryingToLock2 = l2.tryLock(1000, TimeUnit.MICROSECONDS);
+            if(!tryingToLock2){
+                System.out.println(threadName +" not able to lock l2");
+                l1.unlock();
+                return false;
+            }
+        }
+        catch(InterruptedException ex){
+            System.out.println("Unable to lock l2");
+        }
+        return true;
+    }
+}
+
+class Runnable2 implements Runnable
+{
+
+    private Lock l1;
+    private Lock l2;
+
+    Runnable2(Lock l1, Lock l2){
+        this.l1=l1;
+        this.l2=l2;
+    }
+
+    @Override
+    public void run(){
+
+        String ThreadName = Thread.currentThread().getName();
+
+        while(true){
+            int attemptCount = 0;
+            while(!tryToDoLocks()){
+                attemptCount+=1;
+                System.out.println(ThreadName+" unable to apply lock on l1 and l2");
+                try {
+                    Thread.sleep(2000);
+                }
+                catch(InterruptedException ex){
+                    System.out.println("Thread Sleeping");
+                }
+            }
+            if(attemptCount>0){
+                System.out.println(ThreadName+" occupied lock after "+attemptCount+" attempts");
+            }
+
+            l1.unlock();
+            l2.unlock();
+        }
+    }
+
+    public boolean tryToDoLocks() {
+
+        String threadName = Thread.currentThread().getName();
+        try{
+            boolean tryingToLock2 = l2.tryLock(1000, TimeUnit.MICROSECONDS);
+            if(!tryingToLock2){
+                System.out.println(threadName +" not able to lock l2");
+                return false;
+            }
+        }
+        catch(InterruptedException ex){
+            System.out.println("Unable to lock l2");
+        }
+
+        try{
+            boolean tryingToLock1 = l1.tryLock(1000, TimeUnit.MICROSECONDS);
+            if(!tryingToLock1){
+                System.out.println(threadName +" not able to lock l1");
+                l2.unlock();
+                return false;
+            }
+        }
+        catch(InterruptedException ex){
+            System.out.println("Unable to lock l1");
+        }
+        return true;
+    }
+}
+
+
+
+
+public class DeadlockTimeout {
+    public static void main(String[] args){
+
+        Lock l1 = new ReentrantLock();
+        Lock l2 = new ReentrantLock();
+
+        Runnable1 r1 = new Runnable1(l1,l2);
+        Runnable2 r2 = new Runnable2(l1,l2);
+
+        Thread t1 = new Thread(r1);
+        Thread t2 = new Thread(r2);
+
+        t1.start();
+        t2.start();
+    }
+}

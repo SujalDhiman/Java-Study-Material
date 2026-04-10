@@ -1,0 +1,334 @@
+Spring Boot Lecure - 1
+
+in application.properties
+
+debug = true (tells what all classes spring boot configures on its own)
+
+gives in console positive matches and negative matches report
+
+
+2 annotations: 
+
+@ConditionOnProperty(name="",havingValue="")   // write about this
+@ConditionOnMissingBean(<any>.class)
+
+
+internally what happens, which files contain
+all these informations??
+
+
+execution begins with the main class
+
+@SpringBootApplication main annotation to add
+to start your application.
+
+It's the combination of 3 annotations
+
+- @Configuration - for java based 
+   configurations @Bean should be inside this 
+   annotation
+
+- @AutoConfiguration - based on conditions enable
+  and disable
+ 
+- @Component Scan - helps in loading the packages
+  to load the beans in application context
+
+
+internal works:
+
+1) Create Application Context
+
+2) Check Application Type (servlet or reactive)
+
+3) Add scanned bean to AC
+
+4) Enable embeded tomcat container
+
+
+Lecture - 2 (dependency injection and command
+line runner)
+
+- getter and setter design patterns
+
+- lifecycle of a bean 6 stages, instantiation of an object, dependency injection populates the field marked with autowired 
+
+Life Cycle of the bean
+
+@Component
+public class DatabaseManager {
+
+    public DatabaseManager() {
+        System.out.println("1. Constructor: I am born, but I have no dependencies yet.");
+    }
+
+    @Autowired
+    public void setSettings(AppSettings settings) {
+        System.out.println("2. Injection: Spring just gave me my settings.");
+    }
+
+    @PostConstruct
+    public void init() {
+        System.out.println("3. PostConstruct: I am fully built. Now I will open the DB connection.");
+    }
+
+    public void doWork() {
+        System.out.println("4. Service: I am doing my job now.");
+    }
+
+    @PreDestroy
+    public void cleanup() {
+        System.out.println("5. PreDestroy: The app is closing. I am closing the DB connection.");
+    }
+}
+
+
+- inverse of control - You give responsibility to Spring to manage the creation and destroy of bean
+
+- stereotype- @Component, @Repository // write about this in depth
+@Controller, @Service, @Autowired, @Primary
+@Configuraton, @Bean, @Qualifier("beanName"),
+@ComponentScan and @PostConstruct
+
+
+- When you use @Bean on a method, Spring uses the method name as the name of the bean in the ApplicationContext.
+
+  @Configuration
+  public class NetworkConfig {
+
+    @Bean
+    public HttpClient outboundClient() { // The bean name is "outboundClient"
+        return new HttpClient();
+    }
+}
+
+- if you try to @Autowire this later using a name, or if you use context.getBean("outboundClient"), Spring looks for that exact method name.
+
+
+- you can also override the bean name also
+
+  
+  @Bean(name = "primaryDatabase")
+   public DataSource dataSource() { 
+    // Internally, Spring ignores "dataSource" and names this "primaryDatabase"
+    return new MyDataSource();
+   }   
+
+
+- implements CommandLineRunner what does it do?
+
+- It is a simple Functional Interface. If you create a class that implements this interface and mark it as a @Component, Spring Boot will automatically execute
+  its run() method after the ApplicationContext is fully loaded and refreshed.
+
+- We use it for tasks that need the entire system to be online before they start.
+
+1) Database Seeding: Inserting "Admin" users or default settings into a database.
+
+2) Cache Warming: Pre-loading data from a database into memory.
+
+3) Validation: Checking if external APIs or files are accessible before the app starts taking traffic.
+
+
+
+******Lecture - 3****** (Spring Boot Restful Webservices Example)
+
+- Webservices: We can expose our services to users
+
+
+
+Annotations to be used:
+
+1) @RestController - tells spring to call this method and return data in json format
+
+2) @RequestMapping - @RequestMapping("/api/v1/books"), Usually placed at the Class level. It’s the "Base Address" of your service.
+
+3) @PathVariable - /api/v1/books/101 method definition: public Book getBook(@PathVariable("id") Long bookId) 
+
+4) @RequestBody - Used for sending complex objects (usually in POST/PUT).
+
+5) Spring uses a library called Jackson under the hood to convert Java <---> JSON.
+
+6) @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm:ss")
+   private LocalDateTime publishedDate;
+
+7) @JsonProperty - Sometimes your Java variable name is userEmail, but the client wants the JSON to say email_address.
+
+   @JsonProperty("email_address")
+   private String userEmail;
+
+
+8) @JsonIgnore - Crucial for security. Use this on fields like password or internalId so they never get sent in the JSON response.
+
+9) ResponseEntity<T> - It allows you to wrap your data inside a professional envelope that included data, HttpCodes,Headers and Body.
+
+ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK, event)))
+ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(HttpStatus.NOT_FOUND, "Event not found")));
+
+
+
+
+1) SOAP: 
+    
+   - SOAP Protocol
+   - XML MediaType   
+
+2) REST: 
+   	
+   - HTTP and HTTPS
+   - XML, JSON, TEXT, HTML any mediatype
+   - Secure (Token base auth)
+   - Design Easy
+
+ 
+3 layer architecture
+
+
+1) Web Layer (Controller)
+  - endpoints (HTTP Methods)
+
+2) Service Layer (Service Layer)
+  - Business Logic
+
+3) Database Layer (Dao/ Layer)
+  - Dao Logic
+
+
+course-service:
+
+
+1) add course
+2) update course
+3) delete course
+4) view/get course
+
+
+- inside controller
+
+
+ui sends some data--> controller--> service
+--> Dao--->Entity/Model--> save to Db
+
+- Request and Response to be part of DTO object
+
+- creating packages
+
+controller, dao, dto, entity, service, util
+
+
+inside DTO create a Course Class with fields like
+
+courseId, name, trainerName, duration(days), 
+startDate, courseType, fees, isCertificateAvailable
+
+
+- inside service class first use @Service Annotation
+
+
+- inside controller class use @RestController,
+  
+  @PostMapping("")
+  public ResponseEntity<?> addCourseObject(@RequestBody Course 
+  course) 
+
+
+  @GetMapping("/{courseId}")
+  public RespoonseEntity<?> findCourse(@PathVariable
+  Integer courseId){
+
+  }
+
+  @JsonFormat annotation
+
+******** Lecture - 4 ********** 
+
+
+Spring Boot CRUD example Database
+
+
+-> H2 - in memory database
+
+-> Spring Boot Starter Data JPA dependency + H2 dependency
+
+-> Spring Data JPA is an interface and its implementaion
+   is other dependency e.g. H2 in this case
+
+-> things inside entity classes are persisted to DB
+
+-> So inside entity class mark the class with 
+   annotation @Entity, @Table(name="Course_TBL")
+
+
+ 
+  @Entity
+  @Table(name="Course_TBL")
+  @Data
+  @AllArgsConstructor
+  @NoArgsConstructor
+  class Course{
+   
+   @Id
+   @GeneratedValue(strategy="")
+   private int courseId;  
+
+  }
+
+
+-> inside Dao create an interface and extend CrudRepository
+
+   interface CourseDao extends CrudRepository<Course, Integer>
+
+-> datasource configuration or H2
+
+   spring.h2.console.enabled = true
+   spring.datasource.url=jdbc:h2:mem:testdb
+
+-> inside service autowire the CourseDao class
+
+
+Q) What is an ORM?
+
+- ORM (Object-Relational Mapping) is just a fancy way of saying "Automatic Translation."
+
+- Mapping literally means:
+
+  This Class = This Table.
+
+  This Variable = This Column.
+
+  This Object = This Row. 
+
+
+- JPA (The Specification)
+
+   In CS, a Specification is a document or a set of rules (like an Interface in Java). It defines "what" should be done, but it doesn't provide the "how."
+
+   JPA is just a collection of Interfaces and Annotations (like @Entity, @Id, @Table).
+
+   It defines a standard way to map a Java Class to a Relational Table.
+
+   Crucial Point: JPA cannot run by itself. It needs a "Provider" (an Implementation) like Hibernate to actually do the work.
+
+   Analogy: JPA is the Interface; Hibernate is the Class that implements it.
+
+
+- Spring Data JPA provides the Logic.
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
