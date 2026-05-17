@@ -1,0 +1,306 @@
+Transaction
+
+
+To place an order
+
+
+1) persist to order db
+2) update the inventory db
+3) update the payment db
+
+
+- dataconsistency issue occurs when either of the step 
+fails
+
+- if there is failure, revert everything (rollback)
+
+- else commit changes
+
+
+Coding example:
+
+
+- spring boot starter data jpa, spring web, lombok
+
+- create entity for (Product, Order)
+
+- create corresponding repo
+
+- now in service layer inject both the repos and create a method
+in which you will:
+
+a) get product inventory
+b) validate stock availability
+c) uddate total price in order
+d) save order
+e) update stock in inventory
+
+
+Q) How to enable transaction debug logs???
+
+
+- use of transactional annotation @Transactional
+
+- annotate the method with 
+ @Transactional(readOnly=false, propagation = 
+Propagation.REQUIRED, isolation= Isolation.READ_COMMITED)
+ (from transaction.annotation)
+
+- Propagation (levels of transaction)
+
+
+Each Propagation Type:
+
+
+m1 method implements transaction
+
+m2 method implements transaction
+
+
+now m1 invokes m2 ( what happens when method A calls method B)
+
+suppose m2 failed do you want to commit m1 or rollback
+
+
+Propagation is an enum
+
+> REQUIRED (join an existing transaction or create a new one if it does not exist)
+
+- default type: Use it when you want multiple database operations to be part of the same logical unit of work (all succeed or all fail).
+
+- @Service
+public class OrderService {
+
+    @Autowired
+    private InventoryService inventoryService;
+
+    // A new transaction (Train A) starts here
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void placeOrder(Order order) {
+        saveOrder(order);
+        
+        // inventoryService joins Train A. If it fails, the whole order rolls back.
+        inventoryService.updateStock(order.getItems()); 
+    }
+}
+
+@Service
+public class InventoryService {
+
+    // Joins existing transaction if called by placeOrder.
+    // If called directly by a controller, it starts its own transaction.
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void updateStock(List<Item> items) {
+        // ... update DB ...
+    }
+}
+
+(everything fail or everything pass)
+
+- creates one transaction only
+
+suppose save order method is annotated with @Transactional and 
+updateInventoryStock is also annotated with @Transactional
+
+
+
+@Transactional(propagation=Propagation.REQUIRED)
+public Order placeAnOrder(Order order)
+{
+
+Product p = inven.getProduct(order.getProductId())
+
+validateStockAvailability(order, p)
+
+order.setTotalPrice(order.getQuantity() * product.getPrice())
+
+Order saveOrder = orderHandler.saveOrder(order); // annotated with @Transactional
+
+updateInventoryStock(order, p) // // annotated with @Transactional
+
+return saveOrder;
+}
+
+
+
+
+> SUPPORTS (supports if there is any active transaction, if not execute without
+transaction)
+
+
+- I'm easygoing. If you have a train, I'll ride it. If you're walking, I'll walk."
+If a transaction exists, it runs inside it. If no transaction exists, it runs non-transactionally (every single SQL statement commits immediately).
+
+- Read-only operations. If a method just fetches data, it doesn't strictly need a transaction. But if it's called in the middle of a massive data-update process,
+ you might want it to share the same transaction to guarantee it sees the same "snapshot" of data as the rest of the process.
+
+
+@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+public User getUserDetails(Long userId) {
+    return userRepository.findById(userId);
+}
+
+
+
+> MANDATORY (Require an existing transaction, if nothing found it will throw
+an exception)
+
+if any failure occurs within a method in which a method is marked with this
+propagation, don't revert the changes for all just fail me
+
+
+- The Rule: "I only ride trains. If you don't provide a train, I will throw a massive tantrum."
+It requires an existing transaction. If none exists, it throws an IllegalTransactionStateException.
+
+- When you have a helper method that manipulates highly sensitive state, and you want to enforce, at the architectural level, that no developer ever 
+  accidentally calls this method outside of a transactional wrapper.
+
+
+
+
+
+
+
+
+> REQUIRES_NEW (always create a new transaction suspending 
+if any existing transaction)
+
+
+- "I don't care about your train. I am pausing your train, building my own private train, riding it, and then you can resume your train."
+
+- This always starts a completely new, independent transaction. If an outer transaction exists, it is temporarily suspended until the new transaction completes.
+
+- @Service
+public class OrderService {
+
+    @Autowired
+    private AuditService auditService;
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void placeOrder(Order order) {
+        try {
+            processPayment(order);
+        } catch (Exception e) {
+            // Even though placeOrder rolls back, logFailure WILL commit
+            // because it runs in its own independent transaction.
+            auditService.logFailure(order.getId(), e.getMessage());
+            throw e; 
+        }
+    }
+}
+
+@Service
+public class AuditService {
+
+    // ALWAYS creates a new transaction
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void logFailure(Long orderId, String error) {
+        // ... save log to DB ...
+    }
+}
+
+
+@Transactional(propagation=Propagation.REQUIRED)
+public Order placeAnOrder(Order order)
+{
+
+Product p = inven.getProduct(order.getProductId())
+
+validateStockAvailability(order, p)
+
+order.setTotalPrice(order.getQuantity() * product.getPrice())
+
+Order saveOrder = orderHandler.saveOrder(order); // annotated with @Transactional
+
+updateInventoryStock(order, p) // // annotated with @Transactional
+
+
+suppose there is one method you want to use irrespective of current transaction
+fails or not, mark this method with @Transactional setting propagation to req new
+
+return saveOrder;
+}
+
+
+
+
+> NOT_SUPPORTED (execute the method without transaction, suspending any active
+transaction)
+
+> NEVER (ensure the method will run without transaction, throw an exception if found any)
+
+> NESTED 
+
+
+IMP:
+
+The Fix: Always put transactional methods that have different propagation requirements in separate Spring beans (different classes), 
+or inject the class into itself using @Autowired (a slightly messy workaround).
+
+
+
+
+** Isolation Transaction **
+
+
+- isolation: controls the visibility of changes made by one
+transaction to other transaction
+
+
+Types of Isolation Levels:
+
+1) DEFAULT - specific to database (what is the default isolation
+set)
+
+SHOW VARIABLES LIKE 'transaction_isolation'
+
+
+
+2) READ_UNCOMMITED(1)
+
+
+ID   NAME     PRICE  STOCK
+
+1    Laptop   25000   20
+2    Phone    5000    80
+
+
+t1
+  
+- update the stock value 10  s1
+
+- if it rollbacks t2 will refer to wrong value s3
+
+
+
+t2
+
+- read stock 10  s2 (it is trying to read uncommited data)
+  
+
+
+
+Q) how to programmatically rollback a statement??
+
+
+3) READ COMMITED (just the reverse of READ UNCOMMITED)
+
+ 
+4) REPEATABLE_READ ( to have consistent result when t1 is making changes
+without commiting, but t2 wants to read every change t1 makes)
+
+if t2 reads the same data multiple times
+
+
+5) SERIALIZABLE (no concurrent execution)
+
+
+t1 (it will apply lock if it gets started first)
+
+1 update
+ 
+
+
+t2
+
+2 read

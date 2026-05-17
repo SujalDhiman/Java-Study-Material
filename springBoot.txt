@@ -315,12 +315,639 @@ Q) What is an ORM?
 
 
 
+** Bean Validation & Exception Handling **
+
+
+- dependency is spring-boot-starter-validation
+
+some annotations
+
+@NotNull - field must not be null
+
+@NotEmpty - field must not be empty
+
+@NotBlank(message="Please provide name") -
+string field must not be empty string
+
+@Min(value=, message="") and 
+@Max(value=, message="")
+
+@Pattern
+
+@Email
+
+
+- Make use of these annotations at the class you are using 
+  to intercept payload objects at the controller
+
+
+- after adding annotations to your dto class
+
+- now go to controller 
+
+  public ServiceResponse<CourseResponseDTO> addCourse(@RequestBody
+@Valid CourseRequestDTO courseRequestDTO)
+
+
+- 400 something is wrong with your input
+
+
+** Handling Error Messages **
+
+@RestControllerAdvice
+create a class e.g ApplicationGlobalExceptionHandler
+{
+
+   @ExceptionHandler(MethodArgumentNotValidException.class)
+   public ServiceResponse<?> handleError((MethodArgumentNotValidException ex){
+	List<ErrorDTO> err = new ArrayList<>();
+	ex.getBindingResults().getFieldErrors().forEach(e-> errorDTOList.add(new ErrorDTO(e.getMessage)));
+   }
+}
+
+- create a custom class
+
+- error in service will go to controller and then to global
+exception handler
+
+
+- if your custom exception class extends Exception then there is a headover of mentioning throws in every method definition (service, controller)
+
+
+** Logging **
+
+- why sopln is not good, because its a blocking operations
+and it cannot log to a file or cloud
+
+- logback default implementation 
+- log4j2 also and java util Logging
+
+
+Logback - Logback core + logback classic
+
+
+Logger - Capture the event message
+
+Formatter - Formats the message captured by logger
+
+Holder - Dispatch the message by printing them in
+console or file
+
+
+
+Logger log = LoggerFactory.getLogger(CourseController.class)
+
+
+LOGGING LEVELS
+
+
+info - events occuring at runtime
+debug - about the flow of system
+warn - warning becuase of deprecated apis
+error - runtime error
+trace - detail internal flow of the system
+
+
+ALL<TRACE<DEBUG<INFO<WARN<ERROR
+
+by default --> INFO, WARN and ERROR are enabled
+
+to enable others
+
+in application.properties things that can be mentioned
+
+logging.level.(package) = TRACE
+
+
+different patterns to print logs and what is default
+pattern??
+
+
+why to not use + in logging but {} while logging
+
+- logger.debug("The user " + user.getName() + " has " + user.getOrders().size() + " orders.");
+
+Work: The JVM calculates user.getName(), fetches the order list, gets the size, and builds a brand new string in memory.
+
+Check: The Logger looks at the level and says, "Oh, I'm set to INFO. I don't need this DEBUG message."
+
+Result: The Logger throws the string away. You did all that CPU and memory work for absolutely nothing.
+
+
+- logger.debug("The user {} has {} orders.", user.getName(), user.getOrders().size());
+
+Check: The Logger looks at the level first. "I'm set to INFO. I'm ignoring DEBUG."
+
+Result: The Logger stops immediately. It never looks at user.getName() or the order list. It never builds the string. No extra memory was used, and no CPU 
+cycles were wasted.
+
+
+Note: Plus in prod debug statements are never executed hence if debug is enabled in your code in prod you are wasting cpu cycles in doing something absolutely un-
+necessary
+
+// dispatcher pattern
+logging.file.name=app.log
+
+
+** Spring Boot Actuator **
+
+- ready features to help you monitor and manage your application
+
+- By default, for security reasons, only the /health endpoint is exposed over the web.
+
+- to expose other endpoints: management.endpoints.web.exposure.include=health,info,metrics,loggers
+
+
+A. /health
+This is the most used endpoint. It tells you if the application is "UP" or "DOWN."
+
+
+
+- creating your own custom endpoint
+
+Point 1: The Foundation — @Endpoint and Registration
+
+@Endpoint(id = "..."): This is the heart.
+
+The id becomes the URL suffix: /actuator/my-id.
+
+The Rule: The ID must be lowercase and use hyphens (kebab-case). For example, release-info is correct; releaseInfo is
+ technically allowed but discouraged in production standards.
+
+
+Point 2: Fetching Data — The @ReadOperation
+
+Now that we have a skeleton, we need to make it do something. In REST terms, this is your GET request.
+
+The Return Type: You can return a Map, a List, or a custom POJO. Spring will automatically convert this to JSON.
+
+Point 3: Dynamic Input — The @Selector
+In a standard Controller, we use @PathVariable. In Actuator, we use @Selector.
+
+
+Point 4: Modifying State — The @WriteOperation
+In production, you often need to "trigger" something, like clearing a cache or reloading a config. This maps to an HTTP POST.
+
+import org.springframework.boot.actuate.endpoint.annotation.WriteOperation;
+
+    // 4. This maps to: POST /actuator/service-status
+    // Body: {"componentName": "cache", "newStatus": "ACTIVE"}
+    @WriteOperation
+    public void updateComponentStatus(String componentName, String newStatus) {
+        System.out.println("Updating " + componentName + " to " + newStatus);
+        // Logic to actually update your internal system state goes here
+    }
+
+
+- WebEndpointResponse<T>: This is a wrapper (similar to ResponseEntity). It allows you to specify the Body and the HTTP Status Code.
+
+import org.springframework.boot.actuate.endpoint.web.WebEndpointResponse;
+
+    @ReadOperation
+    public WebEndpointResponse<String> getSmartStatus(@Selector String name) {
+        if ("database".equals(name)) {
+            return new WebEndpointResponse<>("Status: OK", 200);
+        } else {
+            // 5. Returning a 404 if the component is not found
+            return new WebEndpointResponse<>("Error: Component not found", 404);
+        }
+    }
+
+
+@Component
+@Endpoint(id = "my-details")
+public class ActEndpoints {
+
+    @ReadOperation
+    public Map<String,String> getApplicationDetails(){
+
+        Map<String,String> mp = new HashMap<>();
+
+        mp.put("Application","Spring Boot");
+        mp.put("Developer", "Sujal Dhiman");
+        mp.put("Technology","Java");
+
+        return mp;
+    }
+
+    @ReadOperation
+    public String getParameter(@Selector String name){
+        return name;
+    }
+}
+
+
+- to check application health, infra related stuff and
+helps in monitoring application in prod
+
+- dependency spring-boot-actuator
+
+- to enable all other endpoints:
+
+management.endpoints.web.exposure.include=*
+
+
+- info endpoint exposed by actuator (double down)
+
+info.application.(you can define anything here)=
+
+- @Endpoint and then @ReadOperation, @WriteOperation
+
+and @Selector what do they mean
+
+
+-- Spring Boot Email Integration
+
+dependencies: Java Mail Sender 
+(spring boot starter mail)
+
+
+- JavaMailSender: This is the primary interface in Spring. When you add the starter, Spring Boot's "Auto-configuration" detects it and automatically 
+creates a bean of type JavaMailSenderImpl.
+
+spring.mail.host=smtp.gmail.com
+spring.mail.port=587
+spring.mail.username=your-email@gmail.com
+spring.mail.password=your-app-password
+
+# Protocol-specific properties
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.starttls.enable=true
+
+- Point 3: Simple Text Emails — SimpleMailMessage
+
+@Service
+public class EmailService {
+
+    @Autowired
+    private JavaMailSender mailSender;
+
+    public void sendSimpleEmail(String to, String subject, String body) {
+        // 3. Create a simple text-only message
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom("your-email@gmail.com");
+        message.setTo(to);
+        message.setSubject(subject);
+        message.setText(body);
+
+        mailSender.send(message);
+    }
+}
+
+
+- Point 4: Rich Content — MimeMessage & MimeMessageHelper
+
+public void sendHtmlEmail(String to) throws MessagingException {
+    // Create the "Empty" MIME container
+    MimeMessage message = mailSender.createMimeMessage();
+    
+    // 4. Use the helper to populate it. "true" indicates multipart.
+    MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+    helper.setTo(to);
+    helper.setSubject("Production Report");
+    
+    // "true" as the second parameter indicates the text is HTML
+    String content = "<h1>Success!</h1><p>The process completed <b>successfully</b>.</p>";
+    helper.setText(content, true);
+
+    mailSender.send(message);
+}
+
+- Point 5: Sending PDF reports or log files is a common production requirement.
+
+public void sendEmailWithAttachment(String to, String filePath) throws MessagingException {
+    MimeMessage message = mailSender.createMimeMessage();
+    MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+    helper.setTo(to);
+    helper.setSubject("Document Attached");
+    helper.setText("Please find the attached file below.");
+
+    // 5. Load the file from the system and attach it
+    FileSystemResource file = new FileSystemResource(new File(filePath));
+    helper.addAttachment("Invoice.pdf", file);
+
+    mailSender.send(message);
+}
+
+The Problem
+If you call mailSender.send() directly inside a Controller method, the user’s browser will "spin" and wait until the email is sent before 
+showing the success page. This is a terrible user experience.
+
+The Solution: @Async
+In production, you send emails Asynchronously. The controller tells the service "send this," and immediately returns a response to the user. 
+The email sending happens on a separate background thread.
+
+
+
+configurations:
+
+spirng.mail.host = smtp.gmail.com (server your application is trying to communicate to)
+spring.mail.port= 587
+spring.mail.username=
+spring.mail.password=
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.starttls.enable
+=true
+
+
+meaning
+
+Behind the Scenes: The SMTP Handshake
+When you call mailSender.send(), a literal conversation happens between your server and the mail server (e.g., Gmail). It looks like this:
+
+HELO/EHLO: Your app introduces itself: "Hello, I am myapp.com."
+
+STARTTLS: Your app says: "Let's speak in code (encryption)." The server agrees.
+
+AUTH LOGIN: Your app sends the username and password (Base64 encoded).
+
+MAIL FROM: "I want to send an email from ujjwal@example.com."
+
+RCPT TO: "Please deliver this to friend@example.com."
+
+DATA: Your app sends the actual headers (Subject, Date) and
+the body.
+
+QUIT: The connection is closed.
+
+
+
+InputStream (Reading): Data is flowing INTO your program.
+
+Example: You are reading a file from the hard drive. The data flows from the disk into your Java code.
+
+OutputStream (Writing): Data is flowing OUT of your program.
+
+Example: You are creating an Excel file. Your program generates the data and "pushes" it out to a file or a network.
+
+
+Point 4: The Spring "Resource" Interface
+Now, let's look at Spring. In a professional application, your data could be stored in many places:
+
+On the Hard Drive (File).
+
+Inside your JAR file (Classpath).
+
+On a Website (URL).
+
+In the RAM/Memory (Byte Array).
+
+Spring created the Resource interface so you don't have to write different code for each one. A Resource is basically a "Handle" or a "Pointer" to data, 
+no matter where it lives.
+
+FileSystemResource is a specific implementation of a Spring Resource.
+
+The Logic:Your Code: "Here is a FileSystemResource at this path.
+"Spring Mail: "Okay, let me open an InputStream (a pipe) to that file.
+"The Flow: Bytes flow from the Hard Drive through the InputStream into the Email Body.
+
+
+ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    workbook.write(outputStream);
+    byte[] excelContent = outputStream.toByteArray();
+    workbook.close();
+
+ByteArrayResource excelResource = new ByteArrayResource(excelContent);
+    helper.addAttachment("UserReport.xlsx", excelResource);
+
+
+
+ByteArrayResource: A handle to Memory.	Uses ByteArrayInputStream to read from a byte array in RAM.
+
+public class EmailRequest{
+
+private String toMail;
+private String subject;
+private String messageBody;
+}
+
+
+create a service
+
+** Simple Mail Sending **
+
+@Service
+class EmailService{
+
+@Autowired
+private JavaMailSender javaMailSender;
+
+private String sendSimpleEmail(){
+	
+	SimpleMailMessage mm = new SimpleMailMessage();
+        mm.setFrom();
+        mm.setTo();
+        mm.setSubject();
+        mm.setBody(); 
+
+        javaMailSender.send(mm);
+}
+}
+
+
+** Sending Attachments **
+
+use MimeMessage class
+
+MimeMessage mm = javaMailSender.createMimeMessage();
+
+MimeMessageHelper mmh = new MineMessageHelper(mm,true);
+
+mmh.setFrom()
+
+
+FileSystemResource file = new FileSystemResource(new File(req.getAttachment()));
+
+mmh.addAttachment(file.getFileName(), file);
+
+javaMailSender.send(mm);
+
+
+
+ByteArrayOutputStream and ByteArrayInputStream
+
+But these two classes are special: the destination is a Byte Array (byte[]) in your computer's RAM.
+
+You use a ByteArrayOutputStream to "catch" the generated report in memory. Then, you use a ByteArrayInputStream to "read" that data so you can send it 
+as an email attachment.
+
+// 1. Create the "Bucket"
+ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+// 2. Write data (the "write" method fills the internal buf[])
+baos.write("Hello Ujjwal".getBytes());
+
+// 3. Extract the final array
+byte[] finalResult = baos.toByteArray();
+
+
+
+ByteArrayInputStream:
+
+When you create this stream, you must provide an existing byte array: new ByteArrayInputStream(myBytes).
+Inside, it keeps a "Cursor" (an integer variable usually called pos).
+
+How it works "Under the Hood":
+
+- pos: An integer that starts at 0.
+
+- read(): When you call this, the stream returns buf[pos] and then increments pos by 1 (pos++).
+
+- available(): It simply subtracts the total length from the current pos.
+
+- End of Stream: Once pos equals the length of the array, it returns -1, signaling that there is nothing left to read.
+
+byte[] myData = "Ujjwal".getBytes();
+
+// 1. Wrap the array in a stream
+ByteArrayInputStream bais = new ByteArrayInputStream(myData);
+
+// 2. Read the bytes one by one
+int data;
+while ((data = bais.read()) != -1) {
+    System.out.print((char) data); // Outputs: Ujjwal
+}
 
 
 
 
+# Scheduler
 
- 
+sharing of daily emails
+
+- fetch all the orders from db
+- generate excel file
+- send email with excel file to the owner
+- automate this using job
+
+
+the generated from excel.. wrap it inside ByteArrayResource 
+and use it as attachment to send the email
+
+
+- @EnableScheduling (class level)
+
+- and annotate the method with @Scheduled(fixedRate = 3000)
+
+- or annotate the method with @Scheduled(cron="")
+
+
+cron
+
+ ┌───────────── Second (0 - 59)
+ │ ┌───────────── Minute (0 - 59)
+ │ │ ┌───────────── Hour (0 - 23)
+ │ │ │ ┌───────────── Day of the Month (1 - 31)
+ │ │ │ │ ┌───────────── Month (1 - 12 or JAN-DEC)
+ │ │ │ │ │ ┌───────────── Day of the Week (0 - 7 or SUN-SAT) 
+ │ │ │ │ │ │
+ * * * * * *
+
+
+* (Asterisk - "Every"): Means "every possible value" for that 
+field. An * in the Minute field means every minute.
+
+- (Hyphen - "Range"): Specifies a range. 10-12 in the Hour field
+means 10 AM, 11 AM, and 12 PM.
+
+/ (Slash - "Increment/Step"): Specifies increments. 0/15 in the 
+Minute field means starting at minute 0, and triggering every 15 
+minutes (0, 15, 30, 45).
+
+, (Comma - "List"): Specifies a list of values. MON,WED,FRI in 
+the Day of the Week field means Monday, Wednesday, and Friday.
+
+
+The Paradox of * in Both Fields
+Scenario A: The 10th of the month.
+
+What you want: 0 0 8 10 * ? (Run on the 10th. Ignore the day of the week).
+
+If you used *: 0 0 8 10 * *
+
+The System's Brain: "Okay, rule 1: Run on the 10th. 
+Rule 2: Run on EVERY day of the week (Monday, Tuesday, Wednesday.
+..). Wait... the 10th is only ONE day of the week! I can't run 
+on the 10th AND run every day of the week simultaneously! ERROR!"
+
+
+
+Scenario B: Every Wednesday.
+
+What you want: 0 0 8 ? * WED (Ignore the date. Run on Wednesdays).
+
+If you used *: 0 0 8 * * WED
+
+The System's Brain: "Okay, rule 1: Run on EVERY date of the
+ month (1st, 2nd, 3rd...). Rule 2: Run only on Wednesdays. 
+Wait... every date of the month isn't a Wednesday! Which rule 
+do I prioritize? ERROR!"
+
+
+
+- You cannot have an * (every) in both the Day-of-Month 
+(field 4) and Day-of-Week (field 6) fields
+
+
+
+# Spring Profile
+
+- application-<env_name>.properties
+
+suupose these are the database properties
+
+now if u want to configure, so since these are 
+database properties annotate this over class
+
+@Profile(value={"dev","qa","uat"})
+
+
+and in main application.properties write this
+
+
+spring.profiles.active=dev
+
+
+- You only place @Profile over a Service or Repository
+ class if the actual Java code/logic needs to change 
+  between environments.
+
+
+public interface EmailService { void send(String message); }
+
+@Service
+@Profile("dev")
+public class MockEmailService implements EmailService {
+    // Just logs the email, doesn't actually send it
+}
+
+@Service
+@Profile({"qa", "uat"})
+public class RealEmailService implements EmailService {
+    // Contains actual SMTP/AWS code to send an email
+}
+
+
+
+for intellij settings
+
+-Dspring.profiles.active=dev
+
+The Priority Hierarchy (Order of Precedence)
+
+When Spring Boot boots up, it looks for properties in a specific order. Anything higher up on this list will completely override anything lower down.
+
+Command-Line Arguments (e.g., --spring.profiles.active=prod) — Highest Priority
+
+JVM System Properties / VM Options (e.g., -Dspring.profiles.active=qa in IntelliJ)
+
+OS Environment Variables
+
+Application Properties outside of your packaged jar
+
+Application Properties inside your packaged jar (e.g., src/main/resources/application.properties) — Lowest Priority
 
 
 

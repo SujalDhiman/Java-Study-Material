@@ -1,0 +1,418 @@
+Kafka for begineers
+
+- it is a distributed event streaming platform
+
+
+Creating or generating Real Time Stream of Data
+- data sent to kafka server
+
+
+Why do we need Kafka??
+
+
+Components in Kafka:
+
+
+1) Pub/Sub Model
+
+
+Publisher: publishes the message
+
+
+Message Broker: stores the message
+
+
+Subscriber: listens to the message
+
+
+
+2) Producer: publishes, creates and posts the message on broker/Kafka Server
+
+3) Kafka Broker: just a server. it is an intermediate entity that helps
+in message exchanges between a producer and consumer.
+
+4) Cluster: group of server/ computer working on a single purpose.
+one or more kafka broker insde a cluster.
+
+5) Topic:
+
+Publisher can publish any sort of messages (like UPI payment,
+Card payment, flight booking etc etc)
+
+Now Consumer asks give me all  payment related messages
+
+now broker says i have lot of payment related messages which one 
+do you want?? Now consumer is stuck
+
+that is where topic came into picture to catergorize different
+form of messages.
+
+you can create multiple topic for different types of messages.
+
+e.g Payment Topic, Booking Topic, Insurance Topic
+
+Consumer needs to subscribe to a particular topic and get all the messages
+
+they act as tables inside kafka eco system
+
+It specifies the category of the message or the classification of the
+message. Listener can then just respond to the messages that belong
+to the topics they are listening on.
+
+6) Partitions: 
+
+producer is producing billions and trillions of message to a topic.
+
+You can break the kafka topic into different sub topics and can 
+distribute it on a machine. these are called partitions.
+
+7) Offset: 
+
+number assigned to each and every message.
+
+It keeps track of which all message has been read by consumer.
+
+
+8) Consumer Groups: multiple consumer instances for multiple partitions
+
+9) Zookeeper: It keeps track of kafka cluster.
+
+
+Kafka Installation:
+
+Open Source: Apache Kafka
+
+Commercial distribution: Confluent Kafka
+
+Managed Kafka Service: Confluent and AWS
+
+and download Offset Explorer
+
+CLI
+
+1) Start Zookeeper
+    
+bin/windows/zookeeper-server-start.sh config/zookeeper.properties
+
+port: 2181
+
+2) Start Kafka Server
+
+bin/windows/kafka-server-start.sh config/server.properties
+
+port: 9092
+
+3) Create a Topic
+
+bin/windows/kafka-topic.sh --bootstrap-server localhost:9092
+-- create --topic javatechie-topic --partition 3 --replication-factor 1
+
+
+
+
+> to list all topics
+
+bin/ kafka-topics.sh --bootstrap-server localhost:9092 --list
+
+> to describe the topic 
+
+bin/ kafka-topics.sh --bootstrap server localhost:9092
+--describe --topic javatechie-topic
+
+
+> to run the producer
+
+
+bin/kafka-console-producer.sh --broker-list localhost:9092 --topic
+javatechie-topic
+
+1) how to pass a csv file to producer
+
+
+
+
+> to run the consumer
+
+bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic
+javatechie-topic --from-beginning
+
+
+
+
+Kafka Producer Consumer using spring boot
+
+
+> Creating Producer
+
+- spring web, spring for apache kafka
+
+in application.properties
+
+
+server.port = 9191
+
+spring.kafka.producer.bookstrap-servers = 9092
+
+spring.kafka.producer.key-serializer: org.apache.kafka.common
+.serialization.StringSerializer
+
+spring.kafka.producer.value-serializer: org.apache.kafka.common
+.serialization.JsonSerializer
+
+
+
+
+@Service
+create a class KafkaMessagePublisher
+
+
+now inside this class
+  
+  @Autowired
+- private KafkaTemplate<String,Object> template;
+
+
+- create a message method and inside this write
+
+  CompletableFuture<SendResult<String,Object>> future = 
+  template.send("topic name","data");
+
+  future.whenComplete((result,ex)->{
+	if(ex == null){sopln(result.getRecordMetadata().offset();)}
+        else{}   
+
+})
+
+
+now create a corresponding controller for it
+
+
+
+- you can create the topic programmatically
+
+
+@Configuration
+public class Config{
+
+@Bean
+public NewTopic createTopic()
+  return new NewTopic(name, partitions, replication_factor)
+}
+
+
+
+
+> Consumer Flow
+
+
+in application.properties
+
+
+server.port = 10000
+spring.kafka.consumer.bootstrap-servers = localhost:9092
+spring.kafka.consumer.group-id = jt-group-1
+
+
+
+create a service and write a method consume
+
+
+@KafkaListener(topics = "javatechie-demo", group-id="jt-grp-1")
+public void consumer1(String message){
+log.info("consumer1 consume the message {}", message);
+}
+
+
+
+> creating separate consumer instances for different partitions
+
+
+just create duplicate method
+
+@KafkaListener(topics = "javatechie-demo", group-id="jt-grp-1")
+public void consumer2(String message){
+log.info("consumer2 consume the message {}", message);
+}
+
+
+@KafkaListener(topics = "javatechie-demo", group-id="jt-grp-1")
+public void consumer3(String message){
+log.info("consumer3 consume the message {}", message);
+}
+
+@KafkaListener(topics = "javatechie-demo", group-id="jt-grp-1")
+public void consumer4(String message){
+log.info("consumer4 consume the message {}", message);
+}
+
+
+
+** equal number of partitions are assigned to equal number
+   of consumers
+
+
+
+** what does lag mean??
+
+
+
+
+** Kafka Serialize and Deserialize
+
+- till now we were dealing with simple strings (becuase they
+are easily convertible to byte streams)
+
+- try to send some POJO classes and see what happens
+
+
+class Customer{
+  private int id;
+  private String name;
+  private String email;
+  private String contactNo;
+}
+
+
+Producer:
+
+void sendEventsToTopic(Customer customer){
+
+  CompletableFuture<SendResult<String,Object>> future = 
+  template.send("topic name", customer);
+
+  future.whenComplete((result,ex)->{
+	if(ex == null)
+        {sopln(result.getRecordMetadata().offset();)}
+        else{}   
+})
+
+
+Consumer:
+
+
+@KafkaListener(topics = "javatechie-demo", group-id="jt-grp-1")
+public void consumer3(Customer message){
+  log.info("consumer3 consume the message {}", message);
+}
+
+
+
+- error occurs: whenever sending data to topic it accepts
+byte array as input... 
+
+
+Producer --> Topic (Serialize)
+Topic ---> Consumer (Deserialize)
+
+
+we need to mention properties in Producer like
+
+spring.kafka.producer.key-serializer: org.apache.kafka.common
+.serialization.StringSerializer
+
+spring.kafka.producer.value-serializer: org.apache.kafka.common
+.serialization.JsonSerializer
+
+
+
+and in Consumer:
+
+
+spring.kafka.consumer.key-deserializer: org.apache.kafka.common
+.serialization.StringDeserializer
+
+spring.kafka.consumer.value-deserializer: org.apache.kafka.common
+.serialization.JsonDeserializer
+
+
+when you see trusted package error in consumer you have to 
+mention this in yaml file
+
+
+spring.kafka.consumer.properties.spring.json.trusted.packages
+: com.javatechie.dto // to mention for consumer 
+
+
+
+
+Method 2) For mentioning Serialization and Deserialization
+
+
+you can do it while doing configuration
+
+
+inside the @Configuration class where you defined topic bean
+
+
+@Bean
+public Map<String,Object> producerConfig(){
+
+Map<String, Object> props = new HashMap<>();
+
+
+props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092")
+props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class)
+props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class)
+
+
+
+@Bean
+public ProducerFactory<String, Object> producerFactory(){
+
+return new DefaultKafkaProducerFactory<>(producerConfig());
+
+}
+
+
+@Bean
+public KafkaTemplate<String, Object> kafkaTemplate()[
+
+return new KafkaTemplate<>(producerFactory());
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

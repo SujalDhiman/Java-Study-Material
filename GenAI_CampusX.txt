@@ -1,0 +1,1020 @@
+GenAI Roadmap
+
+
+#1)
+
+- It is a type of AI that creates new content such as text, images, music, or code - by learning patterns from exisitng data mimicking human creativity.
+
+
+Mental Model:
+
+- Foundation Models - Generalized Models (LLMs)
+
+- User Perspective & Builder Perspective
+
+- User Perspective: Prompt Engineering, RAG, AI Agents, Vector Databases, Fine Tuning  
+
+- About LLM's, Prompt Engineering, RAG, Fine Tuning, Agents, LLMOps 
+   
+- Builder Perspective: RLHF, Pretraining, Quantization
+
+
+#2)
+
+Langchain - framework that helps in building LLM applications.
+
+- helps in building chatbots, RAG, agents and more
+
+- It supports all major LLM's
+- Simplifies developing LLM based applications
+- Integrations available for all major tools
+- Open Source
+- Supports all major GenAI use cases
+
+
+
+Langchain - Fundamentals, RAG and AI Agents
+
+
+#3)
+
+
+What is semantic search??
+
+
+How many runs has virat scored?? --> also convert your 
+query into embeddings
+
+
+you have been given some paragraphs
+
+
+Paragraph about Virat Kohli ---> convert into embeddings(into vectors
+meaning set of numbers) 
+
+Paragraph about Jasprit Bumrah ---> same for this
+
+Paragraph about Rohit Sharma ---> same for this
+
+
+Some problems
+
+1) What will be your brain??
+
+2) How will you deploy LLM on servers?? (Computation heavy)
+
+3) How will you orchestrate the whole show?? There are so many moving components... (AWS S3 storage, Text Splitter, Embeddings, 
+   Database for storing Embeddings and LLM)
+
+
+- To solve all these problems Langchain comes into picture
+
+- Benefits of Lanchain
+
+a) Concept of Chains
+b) Model Agnostic Development
+c) Complete ecosystem
+d) Memory and state handling
+
+- What can you build?
+
+a) Conversational Chatbots
+b) AI Knowledge Assistants
+c) AI Agents
+d) Workflow Automation
+e) Summarization/Research Helpers
+
+
+#4)
+
+- Langchain Components
+
+1) Models
+2) Prompts
+3) Chains
+4) Memory
+5) Indexes
+6) Agents
+
+
+
+
+#Models - In Langchain, "models" are the core interfaces through which you interact
+with AI models.
+
+
+[NLP]
+  |
+  |
+  |
+  | 
+  ----> chatbot ---> NLU + Context Aware Text Generator ---> [LLMS]
+
+
+LLM's size got bigger due to which it became difficult for companies to deploy
+models on their infrastructure... which resulted in creation of APIs to access
+this model.
+
+
+Problem of standardaization came into picture - when different models started
+having their own implementation to interact with LLM's
+
+
+Langchain identified this problem, they created a common interface to interact with
+models.
+
+
+from langchain_openai import ChatOpenAI
+
+from dotenv import load_dotenv
+
+load_dotenv()
+
+model = ChatOpenAI(model="")
+
+result = model.invoke("Hello")
+
+print(result.content)
+
+
+Langchain: you can communicate with 2 types of AI model
+
+1) Language Model: LLM's..... text input <--> text output
+
+2) Embedding Model: text -----> vector and used for semantic search
+
+
+
+#Prompts: LLM ---> Input ---> Prompt
+
+{What is CampusX} --> these are prompts
+
+Prompt Engineers
+
+2) Role Based Prompts
+
+System Prompt: e.g You are a experienced Doctor (commanding LLM to act in a 
+certain way)
+
+User Prompt: Tell me about viral fever
+
+
+3) Few Shot Prompting: You give few examples to LLM to train him accordingly
+
+
+#Chains
+
+- here we build pipelines
+
+- input --> LLM --> translator --> LLM --> summary
+
+- you can create complex pipelines e.g Parallel Chains
+
+
+- Parallel Chains
+
+
+input  --> LLM1 --->
+       |              
+       |            Report ---> Combine ---> Output
+       |
+       --> LLM2 ---> 
+
+
+
+- Conditional Chains
+
+
+
+#Indexes
+
+- It connects your application to external knowledge - such as PDF's, websites
+  or databases
+
+- Doc Loader, Text Splitter, Vector Store, Retrievers ---> Indexes
+
+
+- retriever (converts user query to embedding and does a semantic search on 
+vector database to give you relevant pages)
+
+- LLM + external Knowledge source
+
+
+#Memory
+
+
+LLM API calls are stateless --> 
+
+
+who is modi --> LLM API --> gives answer
+
+
+how old is he? --> LLM API --> I don't have any answer (lost the context)
+
+
+- ConversationBufferMemory - stores a transcript of recent messages. Great for
+  short chats
+
+- ConversationBufferWindowMemory - keeps last N interactions
+
+- Summarizer Based Memory - summarizes older chat segments to keep a condensed
+  memory footprint
+
+- Custom Memory
+
+
+# AI Agents
+
+- LLM's (NLU + Text Gen + context aware)--> chatbot
+- Chatbot with super powers
+
+
+AI Agent has reasoning + tools to fetch information --> can perform tasks
+
+
+
+
+#4) Models
+
+- This component is designed to facilitate interactions with Embedding and
+  Language models.
+
+- Language Models: text input and text output
+
+- Inside language models we have 2 types: 
+
+> LLM's (general purpose -- text gen+ code gen )
+
+> Chat Models - ( it is used for conversational tasks. They take a seq of 
+messages as inputs and return chat messages as outputs)
+
+> Most AI applications comes under Chat Models
+
+
+
+Setup:
+
+
+1) create a folder
+2) python -m venv venv
+3) venv\Scripts\Activate
+4) create a .env file
+
+
+1) Accessing LLM's (less imp)
+
+
+from langchain_openai import OpenAI
+
+from dotenv import load_dotenv
+
+load_dotenv()
+
+llm = OpenAI(model='gpt-3.5-turbo-instruct')
+
+result = llm.invoke("What is the capital of India")
+
+print(result)
+
+
+2) Chat Models
+
+
+> OpenAI
+
+from langchain_openai import ChatOpenAI
+
+from dotenv import load_dotenv
+
+model = ChatOpenAI(model="", temperature = ,max_completion_tokens=
+)
+
+result = model.invoke("What is the capital of India")
+
+print(result.content)
+
+
+temperature - is the parameter that controls the randomness
+of a language model's output. It affects how creative or
+deterministic the responses are:
+
+Lower values ( 0.0-0.3) - more deterministic and predictable
+(0 - same input same output)
+
+Higher values (0.7 - 1.5) - more random, creative and diverse
+(same input different outputs)
+
+> Anthropic
+
+
+> Gemini
+
+
+2) Accessing Open Source Models
+
+
+- Where to find them?? Hugging Face
+
+- Ways to use Open Source Models
+
+1) Using HF (Inference API)
+
+2) Running Locally
+
+
+> 
+
+from lanchain_huggingface import ChatHuggingFace, HuggingFaceEndpoint
+
+load_dotenv()
+
+llm = HuggingFaceEndpoint(repo_id="model name", task="text-generation")
+
+model = ChatHuggingFace(llm=llm)
+
+result = model.invoke("What is capital of India")
+
+print(result.content)
+
+
+
+3) Embedding Models
+
+
+from langchain_openai import OpenAIEmbeddings
+
+from dotenv import load_dotenv
+
+
+load_dotenv()
+
+emb = OpenAIEmbeddings(model='text-embedding-3-large', dimensions=32)
+
+result = emb.embed_query("delhi is the capital of India")
+
+print(str(result))
+
+
+> embeddings for multiple queries
+
+from langchain_openai import OpenAIEmbeddings
+
+from dotenv import load_dotenv
+
+
+load_dotenv()
+
+emb = OpenAIEmbeddings(model='text-embedding-3-large', dimensions=32)
+
+documents = ["","","","",""]
+
+result = emb.embed_documents(documents)
+
+print(str(result))
+
+
+> from huggingface
+
+from langchain_huggingface import HuggingFaceEmbeddings
+
+
+embedding = HuggingFaceEmbeddings(model_name='')
+
+text = 'Delhi is capital of India'
+
+vector = embedding.embed_query(text)
+
+print(vector)
+
+
+
+#5) Prompts in Langchain
+
+
+> Prompts are the input instructions or queries given to a model
+  to guide its output.
+
+
+> Static v/s Dynamic Prompt
+
+
+> from langchain_core.prompts import PromptTemplate
+
+
+template  = PromptTemplate(template = 
+"""
+Please summarise the research paper "{paper_input}"
+
+Explanation Style: {style_input}
+
+Explanantion Length: {length_input}
+
+
+
+""", input_variables=['paper_input','style_input','length_input']
+, validate_template=True)
+
+
+prompt = template.invoke({
+'paper_input':paper_input,
+'style_input':style_input,
+'length_input':length_input,
+})
+
+
+model.invoke(prompt)
+
+
+> from langchain_core.prompts import PromptTemplate
+
+
+-- Best for: Non-chat models or simple tasks like summarization where roles (System/User) don't matter much.
+
+template  = PromptTemplate(template = 
+"""
+Please summarise the research paper "{paper_input}"
+
+Explanation Style: {style_input}
+
+Explanantion Length: {length_input}
+
+
+
+""", input_variables=['paper_input','style_input','length_input']
+, validate_template=True)
+
+
+template.save('template.json') // saves template to json
+
+
+> now how to import prompt using json
+
+from langchain_core.prompts import load_prompt
+
+template = load_prompt('template.json')
+
+prompt = template.invoke({
+'paper_input':paper_input,
+'style_input':style_input,
+'length_input':length_input,
+})
+
+
+model.invoke(prompt)
+
+
+
+# lets create a chatbot now
+
+> with chat history
+
+#1)
+
+chat_history = []
+
+append every msg into a list
+
+and then pass it to LLMs
+
+model.invoke(chat_history)
+
+
+#2) Messages in Langchain (System Message, Human Message, AI Message)
+
+-- Modern models (GPT-4, Gemini, Claude) are "Chat Models." They don't just see one big string; they see a list of message objects with specific roles.
+
+
+from langchain_core.messages import SystemMessage, HumanMessage, 
+AIMessage
+
+
+
+
+model = ChatOpenAI()
+
+
+messages = [
+
+SystemMessage(content=""),
+HumanMessage(content="")
+
+]
+
+-- Why use this? This is the "raw" way to build a conversation history manually. It is rarely used directly in production apps compared to the next option.
+
+result = model.invoke(messages)
+
+messages.append(AIMessage(result.content)))
+
+
+#3) list of messages with Dynamic Message (ChatPromptTemplate)
+
+-- This is the industry standard for production. It combines the power of templates (variables) with the structure of messages (roles).
+
+-- How it works: It creates a template that outputs a list of BaseMessage objects rather than a single string.
+
+-- Best for: Almost every chat-based application.
+
+
+from langchain_core.prompts import ChatPromptTemplate
+
+from lanchain_core.messages import SystemMessage, HumanMessage
+
+
+chat_template = ChatPromptTemplate([
+('system','You are a helpful {domain} expert'),
+('human','Explain in simple terms, what is {topic}')
+])
+
+
+prompt = chat_template.invoke({'domain':'cricket','topic':'Dusra'})
+
+print(prompt)
+
+
+#4) Message Placeholder
+
+-- This is an advanced tool used within a ChatPromptTemplate. It creates a "slot" where you can inject a dynamic list of messages (like chat history) later.
+
+
+- You need to maintain a chat history (and this is solved by 
+Message Placeholder)
+
+
+from langchain_core.prompts import ChatPromptTemplate, MessagePlaceHolder
+
+chat_template = ChatPromptTemplate([
+('system','You are a helpful customer support agent'),
+MessagePlaceholder(variable_name='chat_history'),
+('human','{query}')		
+])
+
+
+with open('chat_history.txt') as f:
+     chat_history.extend(f.readLines())
+
+
+
+prompt = chat_template.invoke({'chat_history':chat_history,'query':''})
+
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+
+prompt = ChatPromptTemplate.from_messages([
+    ("system", "You are a friendly tutor."),
+    MessagesPlaceholder(variable_name="history"), # This is the "slot"
+    ("human", "{question}")
+])
+
+# When invoking, 'history' must be a list of message objects
+response = prompt.invoke({
+    "history": [
+        HumanMessage(content="Hi, I'm Ujjwal."),
+        AIMessage(content="Hello Ujjwal! What are we learning today?")
+    ],
+    "question": "Can you explain Deadlocks?"
+})
+
+
+
+#6) Structured Output in Langchain
+
+
+> Working on outputs given by LLM's
+
+> uses: Data Extraction, API building and Agents
+
+Structured Output:
+
+- with_structured_output is a function used to structure output
+given by a structured output giving LLM
+
+- Output Parsers are classes used to structure output given by
+a non structured output giving LLM
+
+
+
+#) with_structured_output function for structure output giving LLM's
+
+- TypedDict: is a way to define a dict in python where you
+specify what keys and values should exist.
+
+
+from typing import TypeDict, Annotated, Optional
+
+class Person(TypedDict):
+
+   name:str
+   age:int
+
+
+new_person: Person = {'name':'sujal','age':22}
+
+
+from langchain_openai import ChatOpenAI
+
+
+
+model = ChatOpenAI()
+
+
+class Review(TypedDict):
+
+
+
+  key_themes: Annotated[list[str], ""]
+  summary: Annotated[str,"a summary of review"]
+  sentiment: Annotated[str, "return sentiment of review
+             either positive, negative or neutral"]
+
+  pros: Annotated[Optional[list[str]],""]
+
+
+structured_model = model.with_structured_output(Review)
+
+result = structured_model.invoke(''' ''')
+
+
+
+- Pydantic: It is a data validation and data parsing library 
+for Python. It ensures that the data you work with is correct,
+structured and type-safe.
+
+
+pip install pydantic
+
+from pydantic import BaseModel
+
+
+class Student(BaseModel):
+
+    name:str
+    age:Optional[int] = None
+
+
+new_student = {'name':'sujal'}
+
+student = Student(**new_student)
+
+same usage as typed_dict
+
+
+- json_schema
+
+{
+
+  "title":,
+  "description":,
+  "type":"object",
+  "properties":{
+   "name":"string",
+   "age":"integer"
+  },
+  "required":["name"]
+
+
+}
+
+
+
+
+-- meaning of dimensions=32 in Embedding Models
+
+
+
+#7) Chains in Langchain
+
+
+Flow: Prompt (PromptTemplate) -> LLM -> Output 
+
+- creation of a pipeline
+
+
+from langchain_core.prompts import PromptTemplate
+from langchain_core.output_parsers import StrOutputParser
+
+prompt = PromptTemplate(
+
+template="Generate 5 facts about {template}",
+input_variables=['topic']
+)
+
+
+model = ChatOpenAI()
+
+#research this also
+parser = StrOutputParser()
+
+
+# creation of LCEL
+
+chain = prompt | model | parser
+
+result = chain.invoke({'topic':'cricket'})
+
+
+# to visualize this chain
+
+
+chain.get_graph().print_ascii()
+
+
+
+PS (Problem Statement): topic--> LLM--> report--> LLM--> Summary
+
+
+prompt1= PromptTemplate(template="Generate a detailed report on 
+{topic}", input_variables=["topic"])
+
+
+prompt 2 = PromptTemplate(template="Generate a 5 pointer summary on 
+{text}", input_variables=["text"])
+
+
+model = ChatOpenAI()
+
+parser  = StrOutputParser()
+
+chain = prompt1 | model | parser | prompt2 | model | parser
+
+chain.invoke({'topic':'Unemployment in India'})
+
+
+
+# Parallel Chain
+
+PS: text -> notes\quiz --> user
+
+
+
+
+text----> model1---> notes------
+ |                              |
+ |                              |-----> model3
+ |                              |
+  ------> model2 ---> quiz-------
+
+from langchain.schema.runnable import RunnableParallel
+
+
+model1 = ChatOpenAI()
+
+model2 = ChatAnthropic()
+
+prompt1 = PromptTemplate(template="Generate notes {text}",
+input_variables=["text"])
+
+
+prompt2 = PromptTemplate(template="Generate quiz{text}",
+input_variables=["text"])
+
+
+prompt3 = PromptTemplate(template = "merge the provided notes
+and quiz into single doc {notes}  {quiz}",input_variables=["notes",
+"quiz"])
+
+parser = StrOutputParser()
+
+
+parallel_chain = RunnableParallel({
+  'notes':prompt1 | model1 | parser,
+  'quiz' :prompt2 | model2 | parser
+})
+
+merge_chain = prompt3 | model3 | parser
+
+
+chain = parallel_chain | merge_chain
+
+chain.invoke()
+
+
+
+# Conditional Chain (branching)
+
+from langchain.schema.runnable import RunnableBranch
+
+
+model = ChatOpenAI()
+
+parser = StrOutputParser()
+
+prompt1 = PromptTemplate(
+template="Positive feedback or negative {feedback}",
+input_variable=["feedback"]
+)
+
+
+prompt2 = PromptTemplate(
+template="Write positive feedback {feedback}",
+input_variable=["feedback"]
+)
+
+prompt3 = PromptTemplate(
+template="Write negativefeedback {feedback}",
+input_variable=["feedback"]
+)
+
+classifier_chain = prompt1 | model | parser
+
+
+result = classifier_chain.invoke({'feedback': })
+
+# learn about structuring ouput using pydantic
+
+
+# syntax: branch = RunnableBranch((condition1,chain),(condition2,chain),
+default chain)
+
+
+branch = RunnableBranch((condition1,chain),(condition2,chain),
+default chain)
+
+
+branch_chain = RunnableBranch(
+(lambda x: x.sentiment == "positive", prompt2 | model | parser),
+(lambda x: x.sentiment == "negative", prompt3 | model | parser),
+RunnableLambda(lambda x: "Could not find sentiment")
+)
+
+
+chain = classifier_chain | branch_chain
+
+chain.invoke({'feedback':})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    

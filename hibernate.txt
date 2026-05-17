@@ -1,0 +1,185 @@
+
+Hibernate Tutorial
+
+
+1) It is an ORM 
+
+2) creating project
+
+- dependency: hibernate-core
+
+3) hibernate configuration file
+
+
+create file hibernate.cfg.xml
+
+1) first create session factory (set connection driver class, url, username,
+password, dialect and hbm2ddl), and then create mapping (class name to table)
+
+2) SessionFactory factory = new Configuration().configure("hibernate.cfg.xml").
+buildSessionFactory()
+
+
+
+4) Hibernate With Annotations
+
+- create a class and mark it with @Entity, @Id
+
+- Session session = factory.getCurrentSession();
+
+  session.beginTransaction();
+
+  session.save(st);
+
+  session.getTransaction().commit();
+
+- session.close()
+
+
+5) Annotations: @Entity, @Table, @Id, @GeneratedValue, @Column, @Transient
+
+
+
+
+2. What exactly is Hibernate? (The Industry Context)
+	
+- ORM (Object-Relational Mapping): The theoretical concept of mapping objects to tables.
+
+- JPA (Jakarta Persistence API): This is the Interface. It's a set of rules and annotations 
+  (like @Entity). It’s just a document. It does nothing by itself.
+
+- Hibernate: This is the Implementation. It is the actual engine that reads those JPA 
+  annotations and generates the SQL.
+
+
+
+
+** questions **
+
+1) Why mysql connector is required while working with hibernate?
+
+A) It is actually a driver, that contains all the code to connect to a database, send bytes over the network. It actually connects your application to your 
+   database server, Java has a String, but MySQL has VARCHAR. Java has a LocalDateTime, but MySQL has DATETIME or TIMESTAMP. The connector is responsible for 
+   converting Java memory types into the binary format the database understands.
+
+
+2) What does properties defined inside hibernate.cfg.xml actually means?
+
+A)  <property name="connection.driver_class">com.mysql.cj.jdbc.Driver</property> - This is the class inside your MYSQL Connector Jar, without this hibernate wouldn't
+    know which class to use to setup connection with your database
+
+    <property name="connection.url">jdbc:mysql://localhost:3306/TEST_DATABASE?useSSL=false&amp;allowPublicKeyRetrieval=true</property> --> where machine is running
+
+    <property name="connection.username">root</property>
+    <property name="connection.password">root</property>
+
+    <property name="dialect">org.hibernate.dialect.MySQLDialect</property> --> every database has its own dialect, this property tells hibernate that when you are 
+    generating query, make it using MYSQL dictionary
+
+    <property name="hbm2ddl.auto">update</property> --> It manages the Schema Evolution. 
+    
+     1) When your app starts, Hibernate looks at your @Entity class (e.g., User).
+
+     2) It checks the database to see if a table named users exists.
+
+     3) If it doesn't exist, Hibernate creates it.
+
+     4) If it exists but you added a new variable like private String phoneNumber in Java, Hibernate adds that column to the database automatically.
+
+      <property name="show_sql">true</property>
+      <property name="format_sql">true</property>
+      <mapping class="org.example.Models.User" />
+
+
+
+** Core Code **
+
+Configuration cfg = new Configuration();
+
+1) It creates a "shell" object in memory.
+2) It has empty maps for properties and class mappings. It’s basically a "To-Do" list for Hibernate to fill out.
+3) You need a place to aggregate all your settings (URL, Password, Dialect) before you actually fire up the engine.
+
+
+cfg.configure("hibernate.cfg.xml");
+
+1) Without this, the Configuration object is empty. Hibernate wouldn't know if it’s talking to MySQL or a toaster.
+2) Without that XML file, Hibernate is missing the three essential ingredients required to exist as a database tool:
+
+   - The Dialect (The "Accent"): As we discussed, every DB speaks a different version of SQL. Without the config, Hibernate doesn't know which "language" to generate.
+
+   - The Driver (The "Bridge"): It doesn't know which .jar file (the MySQL Connector) to wake up.
+
+   - The Credentials (The "Keys"): It doesn't have the username or password to get past the database’s security.
+
+
+SessionFactory sf = cfg.buildSessionFactory();
+
+1) This is the most "expensive" and complex line in your entire app.
+2) Reads the annotations on your @Entity classes (like User).
+
+   Validates that your Java fields match your Database columns.
+
+   Initializes the Connection Pool: It opens the first few real connections to your MySQL database.
+
+   Builds the Metamodel: An internal "map of maps" that knows exactly how to convert your Java objects to SQL.
+
+3) You only create this once for the entire lifetime of your app because it takes a lot of RAM and time to build.
+
+
+Cost of creating connection:
+
+Every time you open a connection without a pool, the system performs a TCP 3-way handshake (SYN, SYN-ACK, ACK). The latency of this setup often exceeds the 
+execution time of the SQL query itself.
+
+On Java side a connection object is a resource intensive handle
+
+On MySQL side, for every connection object it spawn a thread from its own side. Each thread is allocated a private memory area for join buffers, sort buffers, 
+and result sets. If the number of connections scales too high, the server will encounter Memory Exhaustion or trigger the OOM (Out of Memory) Killer.
+
+
+Connection Pool:
+
+1) A Connection Pool is a design pattern implemented as a data structure (typically a BlockingQueue or a specialized concurrent collection) that maintains a set of 
+   "warm" database connections. Borrowing: When sessionFactory.openSession() is called, the pool provides a reference to an existing, authenticated Connection object.
+
+2) Need to drill down on HikariCP ------ pending
+
+
+
+Session session =sf.openSession(); (hibernates create this)
+
+1) It "hires a worker" for a specific task.
+2) It grabs one physical connection from the pool that the SessionFactory created.
+3) A Session is a Logical Workspace.
+   A Connection is a Physical Resource.
+   sf.openSession() initializes the workspace, which will eventually "lease" a resource from the pool to execute SQL.
+
+4) you can have 1000 session objects but it will use only those 20 physical connections.
+
+
+Transaction tx = session.beginTransaction();
+
+1) It starts the "Safety Net."
+2) this line tells the underlying JDBC connection to turn off "Auto-Commit" (setAutoCommit(false)). It tells the database: "Don't save anything permanently until I 
+   say 'Commit'."
+
+
+
+try{
+      User user  = new User();
+      user.setName("Sujal");
+      user.setSchoolName("Seven Oaks School");
+      session.persist(user);
+      System.out.println("User successfully entered");
+      tx.commit();
+
+    }
+catch (Exception e){
+       System.out.println("Something went wrong");
+    }
+finally{
+        session.close();
+        sf.close();
+    }
+
