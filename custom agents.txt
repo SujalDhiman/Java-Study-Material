@@ -1,0 +1,13 @@
+
+
+** Creating a custom agent **
+
+- .github/agents/your agent .md files
+
+- orchestrator pattern
+
+
+
+
+
+

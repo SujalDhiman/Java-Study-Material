@@ -387,6 +387,31 @@ vector = embedding.embed_query(text)
 print(vector)
 
 
+Q) what is the actual use of dimensions??
+
+
+
+** Similarity Search Mini App **
+
+from sklearn.metrics.pairwise import cosine_similarity
+import numpy as np
+
+embedding= OpenAIEmbeddings(model="")
+
+docs = ["","","",""]
+
+query = ""
+
+doc_embeddings = embedding.embed_documents(docs)
+
+query_embeddings = embedding.embed_query(query)
+
+
+scores = cosine_similarity([query_embeddings],doc_embeddings)[0] // both should be a 2d list
+
+print(sort(list(enumerate(scores)),key=lambda x:x[1]))[-1]
+
+
 
 #5) Prompts in Langchain
 

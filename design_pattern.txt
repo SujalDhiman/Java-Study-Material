@@ -1,0 +1,131 @@
+*** Builder Pattern ***
+
+
+- bahara song and stand by me
+
+class Computer{
+
+private String computerName;
+private int ramSize;
+
+private Computer(ComputerBuilder cb){
+
+this.computerName = cb.computerName;
+this.ramSize = cd.ramSize;
+
+}
+
+public static class ComputerBuilder{
+
+private String computerName;
+private int ramSize;
+
+public ComputerBuilder setComputerName(String name){
+this.computerName=name;
+return this;
+}
+
+public ComputerBuilder setRamSize(int size){
+this.ramSize=size;
+return this;
+}
+
+public Computer build(){
+    return new Computer(this);
+}
+}
+
+
+Computer obj = new Computer.Builder().setComputerName("XYZ").setRamSize(16).build();
+
+
+
+** Strategy Pattern **
+
+PS: Suppose you have a Payment method system in which you process payment by different mode of payments.
+
+public class CheckoutManager{
+public void processPayment(double payment){
+System.out.printlnt("Processed using credit card");
+}
+}
+
+
+// now suppose you want to add UPI mode of payment or take debit card.. so this is what we will be doing
+
+
+public class CheckoutManager{
+
+public void processPayment(double payment, String modeOfPayment){
+
+if(modeOfPayment.equals("Credit Card"))
+{
+// process with credit card
+}
+
+else if(modeOfPayment.equals("Debit Card"))
+{
+
+// process with debit card
+
+}
+
+else
+{
+// process with UPI
+}
+}
+
+
+** Problem: 
+
+1) This is going to bloat our class and we have to keep adding multiple if else to cater to the statement
+
+2) This single class will eventually become thousands of lines long and impossible to read.
+
+
+Solution:
+
+
+create an interface and create multiple classes for different implementation
+
+interface PaymentMode
+{
+void processPayment(Double amount);
+}
+
+class CreditCard implements PaymentMode
+{
+void processPayment(Double amount)
+{
+  // processed using Credit card
+}
+}
+
+class DebitCard implements PaymentMode
+{
+void processPayment(Double amount)
+{
+  // processed using Debit card
+}
+}
+
+
+// problem solved
+public class CheckoutManager{
+
+private PaymentMode paymentMode;
+
+CheckoutManager(PaymentMode paymentMode){
+this.paymentMode = paymentMode;
+}
+
+void processPayment(double amt){
+this.paymentMode.processPayment(amt);
+}
+}
+
+
+
+
+

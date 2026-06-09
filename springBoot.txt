@@ -952,10 +952,350 @@ Application Properties inside your packaged jar (e.g., src/main/resources/applic
 
 
 
+# Spring Data JDBC
+
+
+Spring Data : module
+
+JDBC (older implementation)
+Hibernate (ORM)
+JPA (specification)
+
+
+Spring JDBC: 
+
+
+application.properties
+
+spring.datasource.driver-class-name
+spring.datasource.url
+spring.datasource.username
+spring.datasource.password
+
+
+
+If you have normal jdbc
+
+1) Create Connection Object
+Connection con = DriverManager.getConnection(url,username,password)
+
+2) Create Statement
+
+Statement st = con.createStatement();
+
+3) Execute Query
+
+st.executeQuery()
+
+- We make use of JdbcTemplate() - can be used everywhere
+
+
+- create a new project (dependencies: spring web, 
+lombok, spring data jdbc, Mysql driver)
+
+
+spring data jdbc drawbacks:
+
+1) No automatic table creation (you have to create it first)
+2) No association mapping
+
+
+
+Create entity, repository, controller, service
+
+Entity (Employee) - here you cannot use any annotation like
+@Entity
+
+- check use of annotation @JsonFormat(pattern="")
+
+
+Repository(create interface EmployeeRepository with some methods
+like save, update, getEmployees, getById)
+
+
+now create an Implementation Class
+
+
+@Repository
+public class EmployeeRepositoryImpl implements EmployeeRepository
+
+@Autowired
+private JdbcTemplate jdbcTemplate;
+
+
+
+-- to save thing in database
+
+jdbcTemplate.update("INSERT INTO EMPLOYEE_DATA (name,dept
+,email,doj) values (?,?,?,?)", emp.getName(), emp.getEmail(),
+....)
+
+
+-- to return all things from database
+
+jdbcTemplate.query("select * from employee_data",new EmployeeRowMapper());
+
+
+class EmployeeRowMapper implements RowMapper<Employee>{
+
+  public Employee mapRow(ResultSet rs, int rowNum){
+     
+    return Employee.builder().id(rs.getInt("id"))
+    .name(rs.getString("name")).build();
+
+}
+
+
+
+-- to find by some ids
+
+
+jdbcTemplate.queryForObject("select * from emp_data where
+id = ?", new EmployeeRowMapper(),id);
+
+
+-- to get name by id
+
+jdbcTemplate.queryForObject("select name from emp_data where
+id = ?",String.class,id);
+
+
+-- to get List<Employee>
+
+jdbcTemplate.query("select * from emp_data where
+id = ?", new EmployeeRowMapper(),id);
+
+
+-- for update, delete (use method update)
+
+-- double down on newBeanPropertyRowMapper<>()
+
+
+- For INSERT, UPDATE, or DELETE, use the .update() 
+method. It returns an int
+
+- If you just want to count rows or fetch a single 
+primitive value (like a String or Integer), 
+use .queryForObject().
+
+public int countUsers() {
+    return jdbcTemplate.queryForObject("SELECT COUNT(*) FROM users", Integer.class);
+}
+
+
+- Phase 5: The Professional Tool (NamedParameterJdbcTemplate)
+
+
+As your queries get longer, using ? placeholders becomes 
+a nightmare. If you have 10 question marks, you have to 
+remember the exact order of 10 variables.
+
+public void updateUserName(int id, String newName) {
+    String sql = "UPDATE users SET name = :newName WHERE id = :userId";
+    
+    // We put our parameters in a map
+    MapSqlParameterSource params = new MapSqlParameterSource()
+        .addValue("newName", newName)
+        .addValue("userId", id);
+
+    namedParameterJdbcTemplate.update(sql, params);
+}
+
+
+// Fetch multiple records using an IN clause
+public List<Developer> findByRoles(List<String> roles) {
+    String sql = "SELECT * FROM developers WHERE role IN (:roles)";
+    
+    // Pass the entire List into the parameter source. Spring handles the rest!
+    MapSqlParameterSource params = new MapSqlParameterSource("roles", roles);
+    
+    return namedParameterJdbcTemplate.query(sql, params, new DeveloperRowMapper());
+}
+
+- to get a list of items use .query() method
+
+- // Fetching a single primitive/wrapper value (e.g., COUNT, SUM)
+int totalDevs = jdbcTemplate.queryForObject(
+    "SELECT COUNT(*) FROM developers", 
+    Integer.class
+);
+
+// Fetching a list of single values (e.g., just the usernames)
+List<String> usernames = jdbcTemplate.queryForList(
+    "SELECT username FROM developers", 
+    String.class
+);
+
+
+- public List<Developer> getAllDevelopers() {
+    String sql = "SELECT * FROM developers";
+    // No custom mapper needed! Spring figures it out automatically.
+    return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(Developer.class));
+}
+
+
+- BeanPropertyRowMapper has a very strict set of rules. To use it, your Java class must have:
+
+A completely empty constructor (e.g., public Developer() {}).
+
+Standard Setter methods for every field.
+
+
+
+** Spring Data JDBC **
+
+- can't play with object
+- table auto creation is not supported
+
+
+*** Spring Data JPA ***
+
+- dependencies to be added: lombok, spring web, spring data jpa,
+mysql driver
+
+
+create some packages: entity, dao, service, controller
+
+
+
+entity: Product class with fields (id, name, price, description)
+
+- mark the entity class with @Entity, @Table optional, 
+@Id, @GeneratedValue(strategy=), @Column("name") - to define
+a column name
+
+
+repository: create an interface, CrudRepository(parent),
+JpaRepository(child)... your interface should extend
+JpaRepository<Product, Integer>
+
+
+now in application.properties
+
+Datasource properties: driver class name, url, username and password
+
+spring.datasource.driver-class-name:
+spring.datasource.url: 
+spring.datasource.username: 
+spring.datasource.password: 
+
+hbm2.ddl.auto --> create(it will simply create table even
+if it exists), update(if exist don't create) and none
+
+server.port = 
+
+spring.jpa.hibernate.ddl-auto: update
+
+dialect: convert method to query (MySQL5Dialect)
+
+spring.jpa.properties.hibernate.dialect = org.hibernate.dialect.MYSQL5Dialect
+
+spring.jpa.show.sql: true
+
+
+
+- now on application startup if u want to add things in db
+so you have 2 options
+
+1) @PostConstruct
+
+2) create a file data.sql and put it inside resources
+
+a) schema.sql - to create table, dropping table and altering the table
+b) data.sql - write your insert queries
+
+now to enable this feature to read sql files use:
+
+spring.sql.init.mode: always
+spring.jpa.defer-datasource-initialization: true // to skip schema.sql demand
+
+
+
+- now create a service and autowire the interface
+
+@Autowired
+private ProductRepository repo;
+
+
+1) to add a single object
+
+public Product saveProduct(Product prod){
+
+return repo.save(product)
+}
+
+2) to fetch list of objects
+
+public List<Product> getAll(){
+
+return repo.findAll();
+
+}
+
+3) to get prod by id
+
+return repo.findById(id);
+
+-- to fetch product detail based on any parameter just 
+append the instance variable name after findBy
+
+e.g findByName(name); and just create its corresponding
+method inside the interface
+
+e.g.
+
+public interface ProductRepository extends JpaRepository<Product,Integer>{
+
+Product findByName(String name);
+
+List<Product> findByProductType(String productType)
+
+}
+
+
+4) to get product with price and type
+
+return repo.findByPriceAndProductType(price, productType) // now create this method inside interface
+
+
+5) to write custom queries create custom method inside interface
+
+@Query(value="SELECT * FROM PRODUCT_TBL WHERE price=?1",nativeQuery=true) // position based parameter
+List<Product> getProductByPrice(double price);
+
+@Query("from PRODUCT_TABLE p where p.price= :price")
+List<Product> getProductByPrice(double price);
 
 
 
 
+6) To update things: 1) get product from db 2) update with new value
+
+public Product updateProduct(int id, Product product){
+
+Product existingProduct = repo.findById(id);
+
+existingProduct.setName(product.getName());
+
+and so on......
+
+and now save this
+
+return repo.save(exisitngProduct)
+
+
+}
+
+7) to delete we have all deleteBy Methods
+
+
+
+
+
+
+
+
+ 
 
 
 

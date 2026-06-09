@@ -1,0 +1,226 @@
+CLAUDE CODE (AI CODING TOOL)
+
+
+#2) Setup Claude Code
+
+
+
+shift+- or shift+!  --> to run bash commands
+
+
+#3) Slash Commands
+
+- it triggers a predefined action or workflow instantly - without writing a full
+prompt
+
+
+
+session - one conversation with claude code... it starts with /claude and 
+exits with /exit
+
+a) one session = one task
+
+b) Name your session immediately
+
+c) Commit frequentlty within a session
+
+d) use /btw for quick questions (when claude is working on project, you can use
+this command to let claude answer your side question)
+
+e) export a session before a big refactor (/export file.md)
+
+- session are saved to ~/.claude/projects/
+
+- to resume past conversation claude -r (and then select the conversation)
+
+- /resume - in between session you can switch to other sessions
+
+- /rename <your_session_name>  - to rename current session
+
+
+
+built in commands
+
+1) /logout - to logout
+
+2) /claude - to begin your session
+
+3) use opus for planning phase, sonnet for implementation phase
+
+to switch between models
+ 
+4) /model
+
+5) /usage
+
+when usage limit is hit
+
+6) /extra-usage
+
+7) /stats - statistics of usage
+
+8) /theme
+
+9) /context - gives current chat session context window usage
+
+
+#4) Making code changes using Claude Code (How to give image as context)
+
+
+- @<file_name> tells claude to start making changes in this file
+
+
+#5) Context Window Management
+
+- Context Window - is the amount of information(in tokens)
+that a model like cc can see and remember at one time while generating
+a response
+
+
+- context - all the information available to understand something
+correctly
+
+for programmar: codebase + prd/spec + jira/github issues  
+
+context window - the max amount of context the model can hold at once
+
+Claude Code Context Window: 200k tokens
+
+- each new session has its own fresh context window
+
+- token are consumed by both your messages + claude's replies
+
+- every req sends the entire conversation history from scratch
+
+- give every feature its own session
+
+- subagents get their own isolated context window completely separate
+from the main session
+
+- subagents return only a summary to the main context  - not their ful
+working history
+
+
+- by default you get 150k tokens only 50k tokens is reserved for
+
+
+system prompt ~6K
+tool schemas ~8K
+claude.md 
+conversation history - 
+tool results
+skills+mcp
+auto compact
+
+
+- context window directly proportional to cost
+
+- to compact your chat history: /compact (use it proactively)
+
+
+#6) Claude.md file
+
+- LLM's dont have memory
+
+- cc cannot remember things from prev sessions
+
+- need to repeat instructions across sessions
+
+- repeating instructions is cumbersome & error prone
+
+
+claude.md - project level instruction file used by cc to guide how it behaves
+while working on your codebase
+
+
+ways to make this file 
+
+1) manually
+
+2) using /init - cc spins up an internal agent and it scans your project.
+reads the directory structure.. infers tech stack and naming convention and then
+it creates the claude.md file
+
+
+
+what should be in claude.md file
+
+1) Project Context: description of file
+
+2) Explain your code structure and some business logic and things you use
+
+3) preferred libraries - constraints tools/frameworks to be used
+
+4) commands - list commands for running, tsting and maintaining the project
+
+5) critical rules: highlight critical warnings, edge cases, and things to avoid
+
+e.g do not make changes in database file
+
+
+e.g.
+
+
+## Project Overriew
+
+
+## Architecture
+
+
+## Where things belong
+
+
+## Code Style
+
+
+## Tech Constraints
+
+
+## Commands
+
+
+
+
+-> Different .claude folder
+
+.claude - it controls how claude behaves - either for a specific project
+
+it stores all config related info about skills, custom slash commands and 
+sub-agents
+
+
+Project Level .claude folder - goes on github and team can access it
+<project-rool>/.claude
+
+
+Global/User-level ~/.claude/ - scoped to your machine, applies to every project
+~/.claude/
+
+
+- Types of Claude.md files
+
+1) Project Root ---> ./CLAUDE.md
+
+2) Inside .claude folder --> .claude/CLAUDE.MD
+
+3) Local ---> ./CLAUDE.local.md --> in your project root and is gitignored
+
+4) subdirectory --> ./some/folder/CLAUDE.md
+
+
+30.42
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
