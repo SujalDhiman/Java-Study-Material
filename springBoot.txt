@@ -1290,6 +1290,69 @@ return repo.save(exisitngProduct)
 
 
 
+***Spring Data JPA (Operator | Pagination | Sorting)***
+
+findByfieldOperator<---- syntax
+
+Operator: Like, IN, LessThan or GreaterThan, between
+
+
+** use of IN clause
+
+- public List<Product> getProductsByMultiplePriceValue(List<Double> price)
+  {
+     return repo.findByPriceIn(price);
+  }
+
+
+- and now create this method findByPriceIn inside the
+interface List<Product> findByPriceIn(List<Double> prices)
+
+
+** use of Between clause: same as In but the method name
+will be findByPriceBetween
+
+
+** use of LessThan, GreaterThan - same as above
+
+public List<Product> getProducyWithHigherPrice(double price){
+
+return repo.findByPriceGreaterThan(price);
+
+}
+
+
+** use of like
+
+return repo.findByNameContaining(name)
+
+
+** Sorting
+
+
+- return repo.findAll(Sort.by(Sort.Direction.ASC,fieldName))
+
+
+
+** Pagination
+
+- public Page<Product> getProductWithPageResponse(int offset, int limit)
+
+return repo.findAll(PageRequest.of(offset, limit))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
